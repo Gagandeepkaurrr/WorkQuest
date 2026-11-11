@@ -535,13 +535,13 @@ export function Operations() {
           <strong>{d.oldest_queued_age_seconds}s</strong>
         </article>
         <article className="glass metric-card">
-          <span>Recorded provider attempts</span>
+          <span>Built-in reply attempts</span>
           <strong>{d.provider_attempts}</strong>
         </article>
       </div>
       <div className="decision-grid settings-section">
         {[
-          ["AI jobs", d.ai_jobs],
+          ["Local teammate jobs", d.ai_jobs],
           ["Email jobs", d.email_jobs],
         ].map(([title, counts]) => (
           <article className="glass content-card" key={String(title)}>
@@ -555,7 +555,7 @@ export function Operations() {
         ))}
       </div>
       <div className="glass content-card">
-        <h2>Daily provider usage</h2>
+        <h2>Daily local requests</h2>
         <div
           className="table-scroll"
           tabIndex={0}
@@ -566,9 +566,7 @@ export function Operations() {
             <thead>
               <tr>
                 <th>UTC date</th>
-                <th>Calls reserved</th>
-                <th>Tokens reserved</th>
-                <th>Tokens measured</th>
+                <th>Requests processed</th>
               </tr>
             </thead>
             <tbody>
@@ -576,16 +574,14 @@ export function Operations() {
                 <tr key={u.period}>
                   <td>{u.period}</td>
                   <td>{u.provider_calls_reserved}</td>
-                  <td>{u.tokens_reserved}</td>
-                  <td>{u.tokens_measured}</td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
         <small>
-          Reservations include retries and uncertain usage. These counters are
-          not a provider invoice.
+          Request limits protect this server from excessive use. Built-in
+          replies use no model tokens and incur no API charges.
         </small>
       </div>
     </div>

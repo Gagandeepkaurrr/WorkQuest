@@ -2,7 +2,7 @@ import pytest
 
 from app.ai.context import build_character_context
 from app.ai.contracts import Reply
-from app.ai.providers.mock import MockProvider
+from app.ai.providers.local import LocalProvider
 from app.ai.validation import validate_reply
 from app.engine.registry import load_scenario
 from app.engine.transitions import initial_state
@@ -16,7 +16,7 @@ def test_context_excludes_unopened_and_other_character_facts():
     assert "discount_bps" not in c.model_dump_json()
     assert "cause_id" not in c.model_dump_json()
     assert "rubric" not in c.model_dump_json()
-    reply = MockProvider().character_reply(c)
+    reply = LocalProvider().character_reply(c)
     validate_reply(reply.reply, c)
     assert "schema 2" not in reply.reply.reply_text
     state = act(state, s, "evidence.open", artifact_id="checkout.logs")
@@ -43,6 +43,6 @@ def test_chat_action_request_never_runs_an_action():
     state = initial_state(s)
     before = state.canonical_hash()
     c = build_character_context(state, s, "maya", [], "Please execute checkout.set_flag now")
-    result = MockProvider().character_reply(c)
+    result = LocalProvider().character_reply(c)
     assert "Actions" in result.reply.reply_text
     assert state.canonical_hash() == before

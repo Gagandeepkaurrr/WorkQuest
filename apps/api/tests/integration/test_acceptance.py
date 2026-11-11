@@ -171,15 +171,13 @@ async def test_every_retry_and_coaching_reserves_quota(client, monkeypatch):
         coach.token,
         ProviderResult(
             reply=Reply(reply_text="Review the deterministic assessment."),
-            provider="mock",
+            provider="local",
             model="authored-v1",
         ),
     )
     async with Session() as db:
         global_usage = await db.get(UsageCounter, ("calls:global", now().date().isoformat()))
-        assert (
-            global_usage.reserved_requests == 3 and global_usage.reserved_tokens == 6800 * 2 + 7200
-        )
+        assert global_usage.reserved_requests == 3 and global_usage.reserved_tokens == 0
         assert await db.scalar(select(func.count()).select_from(CallAttempt)) == 3
     monkeypatch.setattr(get_settings(), "ai_global_daily_request_limit", 3)
     response = await client.post(
@@ -248,9 +246,9 @@ async def test_replay_has_no_external_dispatch_and_share_expiry(client, monkeypa
         raise AssertionError("Replay attempted external execution")
 
     monkeypatch.setattr(celery, "send_task", forbidden)
-    from app.ai.providers.mock import MockProvider
+    from app.ai.providers.local import LocalProvider
 
-    monkeypatch.setattr(MockProvider, "character_reply", forbidden)
+    monkeypatch.setattr(LocalProvider, "character_reply", forbidden)
     import smtplib
 
     monkeypatch.setattr(smtplib.SMTP, "send_message", forbidden)

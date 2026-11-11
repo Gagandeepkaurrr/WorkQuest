@@ -28,7 +28,7 @@ jobs:
       - run: mkdir -p artifacts && make setup
       - run: pnpm --filter @workquest/web exec playwright install --with-deps chromium
       - run: make verify
-      - name: Browser journeys against PostgreSQL, Redis, Mailpit and mock worker
+      - name: Browser journeys against PostgreSQL, Redis, Mailpit and local teammate worker
         run: |
           make dev > artifacts/dev.log 2>&1 &
           WQ_DEV_PID=$!

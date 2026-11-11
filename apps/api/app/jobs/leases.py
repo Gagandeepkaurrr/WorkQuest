@@ -126,12 +126,7 @@ def claim_ai_job(job_id: UUID) -> Lease | None:
             sync_coaching_status(db, job)
             sync_event(db, branch, "job.stale", {"job_id": str(job.id)})
             return None
-        provider = "mock" if run.is_demo or run.is_admin_preview else settings.ai_provider
-        if provider == "gemini" and not user.email_verified_at:
-            job.status = "failed"
-            job.failure_code = "EMAIL_VERIFICATION_REQUIRED"
-            sync_coaching_status(db, job)
-            return None
+        provider = "local"
         period = now().date().isoformat()
         scopes = ["calls:global", f"calls:user:{user.id}"]
         counters: list[UsageCounter] = []
@@ -155,11 +150,9 @@ def claim_ai_job(job_id: UUID) -> Lease | None:
             )
             assert counter is not None
             counters.append(counter)
-        token_budget = 7200 if job.kind == "debrief" else 6800
         if (
             counters[0].reserved_requests >= settings.ai_global_daily_request_limit
             or counters[1].reserved_requests >= settings.ai_user_daily_request_limit
-            or counters[0].reserved_tokens + token_budget > settings.ai_global_daily_token_limit
         ):
             job.status = "quota_limited"
             job.failure_code = "AI_QUOTA_EXCEEDED"
@@ -168,7 +161,6 @@ def claim_ai_job(job_id: UUID) -> Lease | None:
             return None
         for counter in counters:
             counter.reserved_requests += 1
-            counter.reserved_tokens += token_budget
             counter.updated_at = now()
         job.attempt_count += 1
         job.status = "running"
@@ -180,7 +172,7 @@ def claim_ai_job(job_id: UUID) -> Lease | None:
                 job_id=job.id,
                 attempt_number=job.attempt_count,
                 provider=provider,
-                model="authored-v1" if provider == "mock" else settings.ai_model,
+                model="authored-v1",
                 prompt_version=settings.ai_prompt_version,
             )
         )
@@ -216,22 +208,11 @@ def publish_ai_result(job_id: UUID, lease_token: UUID, result: ProviderResult) -
         attempt.finished_at = now()
         attempt.input_tokens = result.input_tokens
         attempt.output_tokens = result.output_tokens
-        if result.input_tokens is not None and result.output_tokens is not None:
-            measured = result.input_tokens + result.output_tokens
-            period = attempt.created_at.date().isoformat()
-            budget = 7200 if job.kind == "debrief" else 6800
-            for scope in ["calls:global", f"calls:user:{user.id}"]:
-                counter = db.scalar(
-                    select(UsageCounter)
-                    .where(UsageCounter.scope == scope, UsageCounter.period == period)
-                    .with_for_update()
-                )
-                if counter:
-                    counter.reserved_tokens = max(0, counter.reserved_tokens - budget + measured)
-                    counter.measured_tokens += measured
-            attempt.cost_certainty = (
-                "measured_usage_estimate" if result.provider != "mock" else "unknown"
-            )
+        # Authored replies use no model tokens. Keep request counts for abuse
+        # protection, and record actual zero cost rather than hypothetical usage.
+        attempt.estimated_cost = "0"
+        attempt.cost_currency = "USD"
+        attempt.cost_certainty = "known_free"
         if not context_current(db, job, branch):
             job.status = "stale"
             job.failure_code = "JOB_STALE"

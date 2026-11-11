@@ -65,7 +65,7 @@ async def test_deletion_destroys_secrets_and_blocks_late_publication(client):
     assert not publish_ai_result(
         lease.job_id,
         lease.token,
-        ProviderResult(reply=Reply(reply_text="Late reply"), provider="mock", model="authored-v1"),
+        ProviderResult(reply=Reply(reply_text="Late reply"), provider="local", model="authored-v1"),
     )
     async with Session() as db:
         for sid in secrets:

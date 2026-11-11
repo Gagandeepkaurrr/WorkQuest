@@ -8,9 +8,16 @@ def test_production_rejects_local_defaults():
         Settings(app_env="production", app_origin="http://localhost:5173", demo_enabled=True)
 
 
-def test_live_provider_requires_model_and_key():
+@pytest.mark.parametrize("provider", ["gemini", "openai", "anthropic"])
+def test_paid_providers_are_rejected_even_with_credentials(provider):
     with pytest.raises(ValueError):
-        Settings(ai_provider="gemini", gemini_api_key="", ai_model="")
+        Settings(ai_provider=provider, gemini_api_key="credential-present", ai_model="any-model")
+
+
+def test_local_provider_is_the_only_runtime_and_legacy_mock_is_compatible(monkeypatch):
+    monkeypatch.delenv("AI_PROVIDER", raising=False)
+    assert Settings(_env_file=None).ai_provider == "local"
+    assert Settings(ai_provider="local").ai_provider == "local"
 
 
 @pytest.mark.parametrize("scheme", ["postgresql", "postgres"])

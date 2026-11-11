@@ -123,7 +123,7 @@ async def send_message(
     if not body.text.strip():
         raise AppError("VALIDATION_ERROR", "Write a question first.", 422)
     async with Session.begin() as db:
-        user = await lock_owner(db, auth.id)
+        await lock_owner(db, auth.id)
         branch, run, scenario = await owned_branch(db, auth.id, branch_id, lock=True)
         record, repeated = await idempotent_record(
             db, auth.id, f"messages:{branch_id}", idempotency_key, body.model_dump()
@@ -133,13 +133,6 @@ async def send_message(
         if branch.status != "active":
             raise AppError("PRECONDITION_FAILED", "Conversation requires an active branch.", 409)
         settings = get_settings()
-        if (
-            settings.ai_provider == "gemini"
-            and not run.is_demo
-            and not run.is_admin_preview
-            and not user.email_verified_at
-        ):
-            raise AppError("FORBIDDEN", "Verify your email before using live AI.", 403)
         active = await db.scalar(
             select(AIJob.id).where(
                 AIJob.branch_id == branch_id,

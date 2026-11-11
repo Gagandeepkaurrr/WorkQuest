@@ -76,7 +76,7 @@ export function Landing() {
                 <i>You</i>
               </span>
               <span>
-                AI teammates. Real decisions.
+                Built-in teammates. No AI fees.
                 <br />
                 <strong>A safe place to get it wrong.</strong>
               </span>
@@ -129,7 +129,7 @@ export function Landing() {
                 <span className="avatar blue">M</span>
                 <div>
                   <strong>Maya</strong>
-                  <small>Platform engineer · AI teammate</small>
+                  <small>Platform engineer · Built-in teammate</small>
                 </div>
                 <MessageCircle size={18} />
               </div>

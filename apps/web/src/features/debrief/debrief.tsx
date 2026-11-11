@@ -151,7 +151,7 @@ export function Debrief() {
           )}
         </article>
         <article className="glass content-card">
-          <span className="eyebrow">OPTIONAL AI COACHING</span>
+          <span className="eyebrow">FREE BUILT-IN COACHING</span>
           <h3>A little perspective.</h3>
           <p>
             {r.coaching_text ??
@@ -180,7 +180,8 @@ export function Debrief() {
             </Button>
           )}
           <small>
-            AI commentary is separate from server-calculated findings.
+            Built-in coaching uses no model tokens or API credits. It cannot
+            change your score.
           </small>
         </article>
       </div>
@@ -232,7 +233,7 @@ export function Debrief() {
               {replay.matched
                 ? "matches the saved state"
                 : "did not match — report this issue"}
-              . No operations or AI calls were repeated.
+              . No operations or model calls were repeated.
             </p>
           )}
         </div>

@@ -80,12 +80,12 @@ export function Briefing() {
             <span className="avatar blue">M</span>
             <div>
               <strong>Maya</strong>
-              <small>Platform engineer · AI teammate</small>
+              <small>Platform engineer · Built-in teammate</small>
             </div>
             <span className="avatar">L</span>
             <div>
               <strong>Leo</strong>
-              <small>Product / data engineer · AI teammate</small>
+              <small>Product / data engineer · Built-in teammate</small>
             </div>
           </div>
         </article>

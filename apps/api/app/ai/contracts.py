@@ -1,4 +1,4 @@
-from typing import Protocol
+from typing import Literal, Protocol
 
 from pydantic import Field
 
@@ -33,10 +33,10 @@ class Reply(Strict):
 
 class ProviderResult(Strict):
     reply: Reply
-    provider: str
-    model: str
-    input_tokens: int | None = None
-    output_tokens: int | None = None
+    provider: Literal["local"] = "local"
+    model: Literal["authored-v1"] = "authored-v1"
+    input_tokens: Literal[0] = 0
+    output_tokens: Literal[0] = 0
 
 
 class Provider(Protocol):

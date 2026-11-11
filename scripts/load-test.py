@@ -1,4 +1,4 @@
-"""Twenty isolated learners for five minutes; mock AI, never a production database."""
+"""Twenty isolated learners for five minutes; built-in teammates, never a production database."""
 import argparse, asyncio, json, os, platform, secrets, statistics, subprocess, sys, time
 from pathlib import Path
 from uuid import uuid4
@@ -12,7 +12,7 @@ env={**os.environ,**{k:v for k,v in dotenv_values(root/'.env').items() if v is n
 base=env['DATABASE_URL'].rsplit('/',1)[0];name='workquest_load_'+secrets.token_hex(4)
 admin_url=(base+'/postgres').replace('postgresql+psycopg://','postgresql://')
 with psycopg.connect(admin_url,autocommit=True) as db:db.execute(psycopg.sql.SQL('CREATE DATABASE {}').format(psycopg.sql.Identifier(name)))
-env.update(DATABASE_URL=base+'/'+name,APP_ENV='local',APP_ORIGIN='http://localhost:8001',REDIS_NAMESPACE=name,AI_PROVIDER='mock',DEMO_ENABLED='false')
+env.update(DATABASE_URL=base+'/'+name,APP_ENV='local',APP_ORIGIN='http://localhost:8001',REDIS_NAMESPACE=name,AI_PROVIDER='local',DEMO_ENABLED='false')
 os.environ.update(env);sys.path.insert(0,str(root/'apps/api'))
 children=[];logs=[];measurements={'reads':[],'commands':[]};errors=[];calls=0
 try:
@@ -73,7 +73,7 @@ try:
         return {'count':len(values),'p50_ms':round(statistics.median(values),2),'p95_ms':round(ordered[int((len(ordered)-1)*.95)],2),'max_ms':round(max(values),2)} if values else {'count':0}
     with psycopg.connect(env['DATABASE_URL'].replace('postgresql+psycopg://','postgresql://')) as db:
         dataset={table:db.execute(psycopg.sql.SQL('SELECT count(*) FROM {}').format(psycopg.sql.Identifier(table))).fetchone()[0] for table in ['users','runs','branches','branch_events','scorecards','ai_jobs']}
-    report={'host':platform.platform(),'processor':subprocess.check_output(['sysctl','-n','machdep.cpu.brand_string'],text=True).strip() if sys.platform=='darwin' else platform.processor(),'memory_bytes':subprocess.check_output(['sysctl','-n','hw.memsize'],text=True).strip() if sys.platform=='darwin' else 'not measured','learners':args.learners,'requested_seconds':args.seconds,'elapsed_seconds':round(elapsed,2),'ordinary_workload':'alternating state reads and costed flag commands, one request/second/learner; new run after logical cap','ai':'one mock dialogue per learner; live model excluded','dataset':dataset,'requests':calls,'unexpected_errors':errors,'reads':summary(measurements['reads']),'commands':summary(measurements['commands']),'concurrent_work':'local browser/build/verification tasks may run on same host','targets_met':not errors and all(summary(v).get('p95_ms',9999)<500 for v in measurements.values())}
+    report={'host':platform.platform(),'processor':subprocess.check_output(['sysctl','-n','machdep.cpu.brand_string'],text=True).strip() if sys.platform=='darwin' else platform.processor(),'memory_bytes':subprocess.check_output(['sysctl','-n','hw.memsize'],text=True).strip() if sys.platform=='darwin' else 'not measured','learners':args.learners,'requested_seconds':args.seconds,'elapsed_seconds':round(elapsed,2),'ordinary_workload':'alternating state reads and costed flag commands, one request/second/learner; new run after logical cap','ai':'one local dialogue per learner; no external model','dataset':dataset,'requests':calls,'unexpected_errors':errors,'reads':summary(measurements['reads']),'commands':summary(measurements['commands']),'concurrent_work':'local browser/build/verification tasks may run on same host','targets_met':not errors and all(summary(v).get('p95_ms',9999)<500 for v in measurements.values())}
     (root/'artifacts/load-report.json').write_text(json.dumps(report,indent=2)+'\n');print(json.dumps(report,indent=2))
 finally:
     for child in children:child.terminate()

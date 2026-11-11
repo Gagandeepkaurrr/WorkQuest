@@ -1,99 +1,36 @@
-# Deploy WorkQuest with Render and Vercel
+# Hosting under the no-charge requirement
 
-Prepared on 2026-11-12. The configuration is supplied and locally schema-checked; **no Render or Vercel deployment has been performed**. Render resources in this Blueprint are paid. Review the plans before applying it.
+Updated 2026-11-12. **The user requires no AI/API charges and no hosting charges.** This supersedes the earlier managed Render deployment guide. The full application is supported locally; see [cost policy](COST_POLICY.md).
 
-Vercel serves the React SPA and forwards `/api/*` to Render. Browser cookies and CSRF remain under the Vercel origin. Render runs FastAPI, a Celery worker, the durable dispatcher, hourly cleanup, PostgreSQL 18, and private Key Value. Workers and API must use identical secrets and database settings.
-
-## 1. Install the deployment CLIs and link the frontend
-
-From the repository root on macOS:
+## Run the complete app without cloud service fees
 
 ```sh
-brew install render
-render login
+git clone https://github.com/Gagandeepkaurrr/WorkQuest.git
+cd WorkQuest
+make setup
+make dev
+```
+
+Open http://localhost:5173. Verification/reset emails arrive at http://localhost:8025. Use `make admin` to create an administrator. Teammates and coaching use built-in authored content and no external model tokens. No API keys, cloud account, paid worker, subscription or model download is needed.
+
+## Render
+
+`render.yaml` deliberately contains empty service/database/environment-group lists. Applying it does not provision the former paid stack. Do not copy the paid Blueprint from Git history or provision replacement paid services.
+
+The complete previous architecture required dedicated workers and cron, which have no free Render instances. Free PostgreSQL expires after 30 days, free web services can sleep, and SMTP ports are restricted. It would be misleading to label that stack free and permanently available. [Render free services](https://render.com/docs/free), [service types and free availability](https://render.com/docs/your-first-deploy).
+
+No Render services were created by this project. Removing declarations does not cancel any resources you might separately have created yourself; inspect your provider account before assuming existing bills have stopped. No existing account resources were modified by this change.
+
+## Vercel
+
+`vercel.json` remains in the repository with the React build, SPA fallback and security headers. Vercel Hobby can host the frontend for eligible personal/non-commercial use within its free limits. **That does not host the FastAPI/PostgreSQL/Redis/worker backend**, and the placeholder API destination is not a working service. A public frontend cannot use the PostgreSQL or API running on your private localhost.
+
+If you later choose frontend-only Hobby hosting, the commands are:
+
+```sh
 pnpm dlx vercel@65.14.0 login
 pnpm dlx vercel@65.14.0 link
-```
-
-Create/select a Vercel project named `workquest` (or your own available name). Keep **Root Directory at the repository root**, use Node 24.x, and retain the build/output overrides from `vercel.json`. Find the final production domain in Project Settings → Domains. It might differ from `workquest.vercel.app`; use your actual domain throughout. `.vercel/` is gitignored.
-
-## 2. Create the Render backend
-
-```sh
-render blueprints validate render.yaml
-```
-
-The CLI validation requires your Render workspace. It has **not** been run against an account. The local JSON-schema validation does not prove account quotas, region availability, secret setup, billing or runtime health.
-
-In the [Render dashboard](https://dashboard.render.com/), choose **New → Blueprint**, connect **Gagandeepkaurrr/WorkQuest**, select `main` and `render.yaml`, review the proposed services, and apply. Initial Blueprint creation is a dashboard step; there is no fabricated one-command deploy in this guide.
-
-Supply the prompted settings on **workquest-api** during Blueprint creation. Worker, dispatcher and cleanup reference those exact API values; generated session/metrics secrets and common settings live in `workquest-shared`. Render does not support `sync: false` inside environment groups, so manual prompts are deliberately service-scoped:
-
-| Setting | Value |
-|---|---|
-| `APP_ORIGIN` | Exact final Vercel origin, e.g. `https://your-workquest.vercel.app`, without a trailing slash |
-| `DELIVERY_PAYLOAD_ENCRYPTION_KEY` | A new Fernet key, identical across all backend processes |
-| `SMTP_HOST`, `SMTP_USERNAME`, `SMTP_PASSWORD`, `SMTP_FROM` | Your actual transactional email service and verified sender |
-| `SMTP_PORT`, `SMTP_TLS` | Default 587 / `starttls`; use the provider's actual settings |
-| `SESSION_SECRET`, `METRICS_TOKEN` | Generated once by the shared environment group |
-
-Generate a Fernet key into a private local file, copy its value into Render's secret field, then remove the temporary file after recording it in your password manager:
-
-```sh
-umask 077
-uv run --project apps/api python -c 'from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())' > .delivery-key
-```
-
-Do not commit `.delivery-key`, environment files or credentials. Prefer your password manager's private scratch area; `.delivery-key` is ignored by this repository. PostgreSQL and Redis URLs are injected from Render resources. Standard `postgresql://` URLs are normalized to psycopg by the backend. `RENDER_EXTERNAL_HOSTNAME` is recognized automatically as an exact allowed backend host.
-
-The Blueprint deliberately enables a visibly labelled public **mock AI** mode (`AI_PROVIDER=mock`, `PUBLIC_MOCK_DEMO=true`) and disables guest accounts in production. For real AI, set `AI_PROVIDER=gemini`, an available `AI_MODEL`, and `GEMINI_API_KEY` on all backend services (or in their shared environment group), then restart API, worker and dispatcher. Keep credentials out of Vercel/frontend environment variables.
-
-The API pre-deploy command runs migrations and an idempotent seed. Take a backup before later migrations. Existing administrator-published scenario versions remain selected when seeding again.
-
-## 3. Connect Vercel to the Render API and deploy
-
-Find the Render API URL (for example `https://workquest-api-xxxx.onrender.com`), then:
-
-```sh
-python3 scripts/configure-vercel.py --api-origin https://YOUR-API.onrender.com
 pnpm dlx vercel@65.14.0 deploy --prod
 ```
 
-The helper edits the public backend destination in `vercel.json`; it does not accept credentials or deploy anything. Commit that hostname change if using future Git deployments. No browser `VITE_API_URL` or cross-origin cookie configuration is required. Preview domains are intentionally rejected by the production `APP_ORIGIN`; use a separate staging backend for preview testing.
-
-## 4. Resolve the proxy identity gate before opening registration
-
-**Hosted release blocker: the Render → Vercel proxy chain is not verified.** The Blueprint initially trusts only `127.0.0.1` for forwarded client addresses. Until you configure and verify the exact trusted proxy addresses/chain, requests can share the ingress IP's authentication limit (30 requests/minute), preventing a multi-user launch.
-
-Set the API service's `FORWARDED_ALLOW_IPS` to the platform's verified proxy IPs/CIDRs. Test the actual two-provider chain with two separate clients and a forged `X-Forwarded-For` request: clients must have separate rate-limit buckets, and a client-supplied header must not control its identity. Do **not** set `*` merely to make throttling disappear. If the provider cannot supply a verifiable chain, use a trusted gateway with authenticated client-address forwarding, or use the documented single-origin Compose deployment, whose exact proxy trust is configured. This gate cannot be resolved by local mock tests.
-
-## 5. Admin setup, updates and hosted smoke checks
-
-```sh
-render services
-# Replace each service ID with the actual ID returned by Render.
-render deploys create srv-API --wait
-render deploys create srv-WORKER --wait
-render deploys create srv-DISPATCHER --wait
-render ssh srv-API
-# In the Render shell:
-python -m app.cli.create_admin
-# Optional, intentionally billable real-provider probe after configuring Gemini:
-python -m app.cli.validate_provider --live
-```
-
-Render SSH requires an SSH key on your account. If SSH is unavailable, use the service's interactive dashboard shell. Never put the admin password in a command argument.
-
-After deployment, check:
-
-```sh
-curl --fail https://YOUR-API.onrender.com/health/live
-curl --fail https://YOUR-API.onrender.com/health/ready
-curl --fail --head https://YOUR-FRONTEND.vercel.app/
-```
-
-In a controlled staging/test window, temporarily enable signup for the verification flow, then close it again until all gates pass. Use the hosted browser UI to sign up, receive a real verification email, log in, finish a mission, receive a teammate reply, reload, fork, create/revoke a report, reset the password, and sign out. Inspect `__Host-wq_session` for Secure/HttpOnly/SameSite=Lax/Path=/ with no Domain attribute. Verify CSRF rejects another origin, SSE reconnects through Vercel, API/report responses are never cached, and secret URLs are excluded/redacted in provider logs. Test proxy identity as above, worker/dispatcher recovery, and an encrypted offsite restore. The Blueprint keeps public signup closed (`PUBLIC_SIGNUP_ENABLED=false`) by default. After these gates pass, change it to `true` in the shared group and the Blueprint, then deploy consistently.
-
-A Vercel deployment is not a database rollback. Redeploy a previous application commit only when it is compatible with the current database schema; see [operations](OPERATIONS.md). Hosted streaming duration, SMTP delivery, Gemini evaluation, custom domain/TLS, billing limits, backup RPO/RTO and this entire hosted smoke flow remain **NOT VERIFIED**.
-
-Official references checked for these commands/configuration: [Render CLI](https://render.com/docs/cli), [CLI reference](https://render.com/docs/cli-reference), [Blueprint specification](https://render.com/docs/blueprint-spec), [Docker services](https://render.com/docs/docker), [Vercel CLI deployment](https://vercel.com/docs/projects/deploy-from-cli), [external rewrites](https://vercel.com/docs/routing/rewrites), [Vercel forwarded headers](https://vercel.com/docs/headers/request-headers).
+Choose Hobby; do not enable a paid plan. No hosted deployment was performed, and public full-application hosting remains **NOT PROVIDED / NOT VERIFIED**. The full no-service-fee application is available locally. [Vercel Hobby limits](https://vercel.com/docs/plans/hobby), [CLI deployment](https://vercel.com/docs/projects/deploy-from-cli).

@@ -35,7 +35,7 @@ async def test_stale_fencing_and_cancelled_publication(client):
             lease.token,
             ProviderResult(
                 reply=Reply(reply_text="Current evidence is limited."),
-                provider="mock",
+                provider="local",
                 model="authored-v1",
             ),
         )
@@ -53,7 +53,7 @@ async def test_stale_fencing_and_cancelled_publication(client):
         lease.job_id,
         lease.token,
         ProviderResult(
-            reply=Reply(reply_text="No late reply."), provider="mock", model="authored-v1"
+            reply=Reply(reply_text="No late reply."), provider="local", model="authored-v1"
         ),
     )
 
@@ -72,17 +72,17 @@ async def test_lease_expiry_and_lost_broker_ack_recovery(client):
     assert not publish_ai_result(
         jid,
         lease.token,
-        ProviderResult(reply=Reply(reply_text="Late"), provider="mock", model="authored-v1"),
+        ProviderResult(reply=Reply(reply_text="Late"), provider="local", model="authored-v1"),
     )
     assert publish_ai_result(
         jid,
         fresh.token,
-        ProviderResult(reply=Reply(reply_text="Current"), provider="mock", model="authored-v1"),
+        ProviderResult(reply=Reply(reply_text="Current"), provider="local", model="authored-v1"),
     )
     assert not publish_ai_result(
         jid,
         fresh.token,
-        ProviderResult(reply=Reply(reply_text="Duplicate"), provider="mock", model="authored-v1"),
+        ProviderResult(reply=Reply(reply_text="Duplicate"), provider="local", model="authored-v1"),
     )
     async with Session() as db:
         attempts = (await db.scalars(select(CallAttempt).where(CallAttempt.job_id == jid))).all()
@@ -99,7 +99,7 @@ async def test_quota_and_schema_failure_preserve_work(client):
         lease.token,
         ProviderResult(
             reply=Reply(reply_text="bad reference", referenced_fact_ids=["unrevealed"]),
-            provider="mock",
+            provider="local",
             model="authored-v1",
         ),
     )

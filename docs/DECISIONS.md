@@ -10,3 +10,5 @@
 - Retry recovery retains original idempotency keys after authentication/rate-limit failures because these can occur before the server retrieves a previously committed response.
 - Password reset, login and password change serialize on the account row; token consumption locks owner before token to prevent reset interleavings/deadlocks.
 - Frontend Nginx runtime uses patched Debian Trixie rather than Alpine after a high-severity musl finding; scan the final runtime again and record its digest.
+
+- 2026-11-12 cost override: user explicitly selected no AI and no hosting charges. Built-in authored replies are the sole provider; reject paid provider selections, remove remote adapter/SDK/keys, keep all services local, and disable paid Render provisioning. Vercel configuration remains frontend-only and is not presented as a free full backend.

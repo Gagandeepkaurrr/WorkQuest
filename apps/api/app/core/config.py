@@ -4,7 +4,7 @@ from typing import Literal
 from urllib.parse import urlparse
 
 from cryptography.fernet import Fernet
-from pydantic import AliasChoices, Field, SecretStr, model_validator
+from pydantic import AliasChoices, Field, SecretStr, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -35,22 +35,25 @@ class Settings(BaseSettings):
     smtp_password: SecretStr = SecretStr("")
     smtp_from: str = "practice@workquest.local"
     smtp_tls: Literal["none", "starttls", "tls"] = "none"
-    ai_provider: Literal["mock", "gemini"] = "mock"
-    ai_model: str = "gemini-3.8-flash"
-    gemini_api_key: SecretStr = SecretStr("")
+    ai_provider: Literal["local"] = "local"
     ai_timeout_seconds: int = Field(default=45, ge=5, le=45)
     ai_prompt_version: str = "character-v1"
     ai_user_daily_request_limit: int = 100
     ai_global_daily_request_limit: int = 1000
-    ai_global_daily_token_limit: int = 6_800_000
     ai_branch_request_limit: int = 20
     demo_enabled: bool = True
     demo_ttl_seconds: int = 7200
-    public_mock_demo: bool = False
     metrics_token: SecretStr = SecretStr("")
     job_lease_seconds: int = Field(default=60, ge=60, le=300)
     job_max_attempts: int = Field(default=3, ge=1, le=3)
     job_max_age_seconds: int = Field(default=600, ge=60, le=600)
+
+    @field_validator("ai_provider", mode="before")
+    @classmethod
+    def local_only(cls, value):
+        # Existing local installations used the name "mock". It is an alias
+        # for the same free engine, never a switch enabling a remote provider.
+        return "local" if value == "mock" else value
 
     @model_validator(mode="after")
     def validate_environment(self):
@@ -78,14 +81,8 @@ class Settings(BaseSettings):
                 raise ValueError("Production requires a public HTTPS origin")
             if self.demo_enabled or not self.email_verification_required:
                 raise ValueError("Production must disable guests and require verified email")
-            if self.ai_provider == "mock" and not self.public_mock_demo:
-                raise ValueError("Public mock mode requires explicit PUBLIC_MOCK_DEMO")
             if self.smtp_tls == "none" or not self.metrics_token.get_secret_value():
                 raise ValueError("Production requires SMTP TLS and a metrics token")
-        if self.ai_provider == "gemini" and (
-            not self.ai_model or not self.gemini_api_key.get_secret_value()
-        ):
-            raise ValueError("Gemini requires an explicit model and API key")
         return self
 
     @property

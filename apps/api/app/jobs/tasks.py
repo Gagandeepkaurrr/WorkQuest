@@ -1,9 +1,7 @@
 from uuid import UUID
 
-from httpx import NetworkError, TimeoutException
-
 from app.ai.contracts import Provider
-from app.ai.providers.mock import MockProvider
+from app.ai.providers.local import LocalProvider
 from app.db import models  # noqa: F401
 from app.jobs.celery_app import celery
 from app.jobs.email import deliver_email
@@ -16,13 +14,7 @@ def execute_ai(job_id: str):
     if not lease:
         return
     try:
-        provider: Provider
-        if lease.provider == "gemini":
-            from app.ai.providers.gemini import GeminiProvider
-
-            provider = GeminiProvider()
-        else:
-            provider = MockProvider()
+        provider: Provider = LocalProvider()
         result = (
             provider.debrief_coaching(lease.context)
             if lease.kind == "debrief"
@@ -30,16 +22,7 @@ def execute_ai(job_id: str):
         )
         publish_ai_result(lease.job_id, lease.token, result)
     except Exception as exc:
-        status = getattr(exc, "code", None) or getattr(exc, "status_code", None)
-        retryable = isinstance(
-            exc, (TimeoutError, ConnectionError, OSError, TimeoutException, NetworkError)
-        ) or status in (
-            429,
-            500,
-            502,
-            503,
-            504,
-        )
+        retryable = isinstance(exc, (TimeoutError, ConnectionError, OSError))
         # No raw exception/provider payload enters logs, broker messages or learner output.
         fail_attempt(
             lease.job_id,

@@ -11,3 +11,5 @@ Checked 2026-11-11. Exact resolved JavaScript packages are in pnpm-lock.yaml and
 - Official Gemini model page identifies `gemini-3.8-flash` as stable and structured-output capable: https://aistudio.google.com/docs/models/gemini-3.8-flash . Structured output docs: https://aistudio.google.com/docs/structured-output . SDK 3.1.0 exposes the typed generate_content/config interface used by the adapter. No live model call has been made.
 
 - Deployment compatibility: root package engines uses `24.x` for Vercel; `.node-version` and containers retain exact24.22.1 for local/build reproducibility. Render manual secret prompts are service-scoped, with worker references; the schema alone does not enforce that environment-group restriction.
+
+- 2026-11-12 no-charge override: removed google-genai and its unused transitive dependencies. Earlier Gemini version notes above are historical, not an available integration. No LLM API SDK is required.

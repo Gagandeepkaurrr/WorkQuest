@@ -22,8 +22,7 @@ METRICS_TOKEN={secrets.token_urlsafe(32)}
 SMTP_HOST=localhost
 SMTP_PORT=51025
 SMTP_FROM=practice@workquest.local
-AI_PROVIDER=mock
-AI_MODEL=gemini-3.8-flash
+AI_PROVIDER=local
 DEMO_ENABLED=true
 ''')
     path.chmod(0o600)

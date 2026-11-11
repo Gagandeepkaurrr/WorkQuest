@@ -2,7 +2,7 @@
 
 A workplace practice app: investigate an incident, talk with a simulated team, make decisions, and compare the consequences. Three complete missions cover a checkout outage, inventory overselling, and an analytics timezone error. A white glass interface, bold Inter typography, sage/cobalt accents, and a pegboard mission board give it a calm, tactile feel.
 
-React + TypeScript + Vite · FastAPI + SQLAlchemy · PostgreSQL 18 · Redis + Celery. The deterministic engine owns state, logical time, verification and scores. AI provides bounded conversation and optional coaching; it cannot execute actions or assign points.
+React + TypeScript + Vite · FastAPI + SQLAlchemy · PostgreSQL 18 · Redis + Celery. The deterministic engine owns state, logical time, verification and scores. Built-in authored teammates provide evidence-based conversation and optional coaching. They use no external model, API key, tokens or credits, and cannot execute actions or assign points.
 
 ![WorkQuest white glass interface with a pegboard mission preview](docs/screenshots/landing.png)
 
@@ -22,7 +22,7 @@ For this existing checkout, use `cd /Users/gaggu/WorkQuest` and run the last two
 - App: **http://localhost:5173**
 - Local email inbox: **http://localhost:8025** — sign up in the app and follow the verification email here.
 - API documentation: **http://localhost:8000/docs** (local only).
-- `Try the demo` creates an isolated two-hour mock account. No default learner or administrator credentials exist.
+- `Try the demo` creates an isolated two-hour local practice account. No default learner or administrator credentials exist.
 
 ```sh
 make admin       # prompts privately for email, display name and password
@@ -30,27 +30,25 @@ make verify      # backend lint/types/tests, scenario checks, contract drift, fr
 make e2e         # desktop + mobile browser journeys; keep make dev running
 make audit       # package audits and redacted source credential scan
 make backup-restore
-make load        # isolated 20-learner, five-minute mock exercise
+make load        # isolated 20-learner, five-minute local exercise
 ```
 
 Admin creation is explicit. Promoting an existing account requires its current password. Sign in afterward and use Administration. No HTTP role-promotion endpoint exists.
 
 A production-style local container preview is available with `make containers` at **http://localhost:8080**. Stop `make dev` before using that mode: the workers must share one consistent origin configuration. Stop containers with `make stop`; this preserves database volumes. Do not run `docker compose down -v` unless you intend to delete local data.
 
-## Configure live AI
+## Free runtime and hosting policy
 
-Default local/test mode is `AI_PROVIDER=mock`. To opt into Gemini, edit the private, gitignored `.env` with `AI_PROVIDER=gemini`, a supported `AI_MODEL`, and `GEMINI_API_KEY`. Restart all application processes. Never place keys in frontend code or commit them. After intentionally authorizing a potentially billable probe:
+The complete supported setup runs on your existing computer with **no AI API credits and no cloud hosting fees**. PostgreSQL, Redis and the Mailpit email inbox run locally. `AI_PROVIDER=local` is enforced; the old `mock` value remains a compatible alias. External model adapters and SDKs have been removed, and paid provider settings are rejected.
+
+Teammates use authored scenario facts and rule-based replies, not a general-purpose language model. Coaching also runs locally. Check it without any billable request:
 
 ```sh
 cd apps/api
-uv run python -m app.cli.validate_provider --live
+uv run python -m app.cli.validate_provider
 ```
 
-The probe validates one structured response and prints only model/usage metadata. Live credentials, real-provider behavior, external SMTP, and a public deployment need separate verification. Demo and administrator previews always use the mock provider.
-
-## Deploy with Render and Vercel
-
-Follow [the deployment commands and setup guide](docs/DEPLOY_RENDER_VERCEL.md). `render.yaml` provisions the backend services; `vercel.json` builds the SPA and proxies its API. Hosted integration, proxy identity, TLS and delivery checks remain unverified.
+The previous paid Render deployment is disabled: `render.yaml` provisions no resources. `vercel.json` is retained for optional frontend hosting, but a frontend alone does not host the complete backend. No cloud services have been deployed. See [cost policy](docs/COST_POLICY.md) and [hosting notes](docs/DEPLOY_RENDER_VERCEL.md). Do not apply the older paid deployment instructions from Git history.
 
 ## Where things live
 

@@ -1,7 +1,9 @@
+"""Built-in authored teammates. No external models, sockets, API keys or credits."""
+
 from app.ai.contracts import CharacterContext, ProviderResult, Reply
 
 
-class MockProvider:
+class LocalProvider:
     def __init__(self, failure: str | None = None):
         self.failure = failure
 
@@ -11,7 +13,7 @@ class MockProvider:
         if self.failure == "invalid":
             return ProviderResult(
                 reply=Reply(reply_text="Invalid reference", referenced_fact_ids=["not-allowed"]),
-                provider="mock",
+                provider="local",
                 model="authored-v1",
             )
         text = context.message.lower()
@@ -38,7 +40,7 @@ class MockProvider:
                 referenced_fact_ids=[match.id] if match else [],
             )
         return ProviderResult(
-            reply=reply, provider="mock", model="authored-v1", input_tokens=0, output_tokens=0
+            reply=reply, provider="local", model="authored-v1", input_tokens=0, output_tokens=0
         )
 
     def debrief_coaching(self, context: CharacterContext) -> ProviderResult:
@@ -46,7 +48,7 @@ class MockProvider:
             reply=Reply(
                 reply_text="Compare the checks you completed with the missed checks in your assessment. Try a saved checkpoint and change one decision, then verify its effect. The score above is calculated by the simulation."
             ),
-            provider="mock",
+            provider="local",
             model="authored-v1",
             input_tokens=0,
             output_tokens=0,

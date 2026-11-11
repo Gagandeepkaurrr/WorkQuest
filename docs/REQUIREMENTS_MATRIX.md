@@ -1,13 +1,13 @@
 # Requirements and acceptance evidence
 
-Source: PROJECT_SPECIFICATION.txt, with the user's white/glass/pegboard visual override. Implementation evidence below is local; external gates are separate in RELEASE_CHECKLIST.md. Tests use real PostgreSQL, not SQLite.
+Source: PROJECT_SPECIFICATION.txt, with the user's white/glass/pegboard visual override and 2026-11-12 no-AI/no-hosting-charge requirement. The latter replaces the live AI adapter with built-in authored replies and disables managed paid deployment. Implementation evidence below is local; external gates are separate in RELEASE_CHECKLIST.md. Tests use real PostgreSQL, not SQLite.
 
 | Requirement | Implementation | Local evidence |
 |---|---|---|
 | F01 Accounts/onboarding | modules/auth, modules/users; web auth/settings/orientation | auth integration tests; actual UI signup/Mailpit verification; settings browser flow |
 | F02–F03 Library/briefing | public scenario projections, filters, saved run archive/pagination, version-pinned start | ownership/draft tests; three browser mission starts |
 | F04 Workspace | seven responsive panels, keyboard navigation, evidence/action dialogs, durable drafts | desktop/mobile keyboard journeys; axe tested debrief views |
-| F05 AI teammates | ai/context/validation/providers; durable conversations/jobs/SSE | unit AI tests; lease/quota/recovery tests; mock browser reply; live Gemini unverified |
+| F05 AI teammates | ai/context/validation/providers; durable conversations/jobs/SSE | unit AI tests; lease/quota/recovery tests; mock browser reply; external models removed by user request |
 | F06–F08 Evidence/tasks/operations | pure engine + three private scenario packages, structured commands | exact golden/negative vectors, cap/property/fingerprint tests |
 | F09 Persistence | atomic PostgreSQL transactions, idempotency records, notes revision, reload recovery | parallel command and rollback tests; browser notes/replay; frontend timeout recovery |
 | F10 Branches/replay | immutable snapshots, branch baselines, permitted transcript, pure replay | branch isolation and replay side-effect tests; browser fork/compare |
@@ -38,7 +38,7 @@ Paths are relative to `apps/api/tests` unless noted. Each named test was include
 | T13 Fork snapshot/notes/transcript | `test_branches.py::test_checkpoint_fork_preserves_parent_notes_and_context` |
 | T14 Replay no external side effects | `test_acceptance.py::test_replay_has_no_external_dispatch_and_share_expiry` |
 | T15 SSE reconnect/privacy/revocation | `test_acceptance.py::test_sse_private_cursor_reconnect_and_revocation` with real PostgreSQL/Redis and the streaming generator |
-| T16 Injection/private facts/schema/markup | `unit/test_ai.py`, `unit/test_scenario_validation.py`; frontend `report-safety.test.tsx`; real-model evaluation unverified |
+| T16 Injection/private facts/schema/markup | `unit/test_ai.py`, `unit/test_scenario_validation.py`; frontend `report-safety.test.tsx`; local authored replies; no external model |
 | T17 Every attempted call counted | `test_acceptance.py::test_every_retry_and_coaching_reserves_quota` |
 | T18 Coaching cannot alter score hash | `test_release_boundaries.py::test_failed_coaching_is_terminal_without_score_mutation` |
 | T19 Immutable preview | `test_admin.py::test_admin_hash_bound_validation_preview_and_immutable_publish` |

@@ -19,7 +19,7 @@ def user_view(user: User) -> UserView:
         role=user.role,
         email_verified=bool(user.email_verified_at),
         is_demo=bool(user.demo_expires_at),
-        ai_provider="mock" if user.demo_expires_at else get_settings().ai_provider,
+        ai_provider="local",
     )
 
 

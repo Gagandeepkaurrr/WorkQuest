@@ -140,10 +140,7 @@ function Conversation({
             <span className="live-dot" />
             <strong>{teammate === "maya" ? "Maya" : "Leo"}</strong>
             <span className="small muted">
-              AI teammate ·{" "}
-              {state.is_demo || state.is_admin_preview
-                ? "mock practice"
-                : "configured provider"}
+              Built-in teammate · Free · No API credits
             </span>
           </div>
           <span className="small muted">No logical time cost</span>

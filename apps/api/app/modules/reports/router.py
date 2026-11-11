@@ -288,7 +288,7 @@ async def coaching(
     branch_id: UUID, auth: Auth = Depends(current_auth), idempotency_key: UUID = Header()
 ):
     async with Session.begin() as db:
-        user = await lock_owner(db, auth.id)
+        await lock_owner(db, auth.id)
         branch, run, scenario = await owned_branch(db, auth.id, branch_id, lock=True)
         record, repeated = await idempotent_record(
             db, auth.id, f"coaching:{branch_id}", idempotency_key, {}
@@ -309,8 +309,6 @@ async def coaching(
                 "Coaching retry limit reached. The deterministic assessment remains complete.",
                 429,
             )
-        if get_settings().ai_provider == "gemini" and not user.email_verified_at:
-            raise AppError("FORBIDDEN", "Verify your email before requesting live coaching.", 403)
         summary = {
             "score": score.total_score,
             "outcome": score.outcome,

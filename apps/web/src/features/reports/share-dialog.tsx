@@ -115,7 +115,7 @@ export function ShareDialog({ branchId }: { branchId: string }) {
         open={open}
         onOpenChange={setOpen}
         title="Share only the result."
-        description="Sharing is off until you create a link. Public reports exclude chats, notes, email, private IDs, solution details, and AI commentary."
+        description="Sharing is off until you create a link. Public reports exclude chats, notes, email, private IDs, solution details, and Coaching commentary."
       >
         <div className="stack">
           {!snapshot && !result && (

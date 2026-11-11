@@ -1,4 +1,4 @@
-"""Launch local API, web, durable dispatcher and mock worker. Ctrl-C stops children."""
+"""Launch local API, web, durable dispatcher and local teammate worker. Ctrl-C stops children."""
 from pathlib import Path
 import subprocess
 import signal

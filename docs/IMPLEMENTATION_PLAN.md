@@ -10,6 +10,8 @@
 
 **Spec:** docs/PROJECT_SPECIFICATION.txt (read completely). User steering: white backgrounds, translucent glass surfaces, minimal bold typography, creative pegboard area, restrained colors. This supersedes the spec's dark-default visual direction.
 
+**2026-11-12 cost override:** the user requires no AI/API charges and no hosting charges. Built-in authored replies now replace the original mock/Gemini provider plan. The complete supported stack runs locally; the Render Blueprint declares no resources. See COST_POLICY.md for the current scope.
+
 ## Global constraints
 
 - PostgreSQL is authoritative. Never substitute SQLite for integration gates.
@@ -66,7 +68,7 @@ Files: modules/scenarios, modules/runs, frontend missions/workspace/evidence/act
 ### Task 4: Teammates and durable work
 Files: ai/, jobs/, modules/conversations, SSE/client transport.
 - [x] Write context/validation and job lease/quota/cancellation/stale/recovery tests first.
-- [x] Implement mock/Gemini contract, authorized context, encrypted email jobs, DB dispatcher, fenced claims and counted attempts.
+- [x] Implement provider contract, authorized context, encrypted email jobs, DB dispatcher, fenced claims and counted attempts. The original Gemini adapter was subsequently removed under the cost override; only local authored replies remain.
 - [x] Implement queued/working/failed/stale/cancel/retry UI, persistent chat drafts, resumable branch-bound event cursors.
 - [x] Run `uv run pytest tests/unit/test_ai.py tests/integration/test_jobs.py`; bounded worker/broker fault checks. Commit and record.
 
