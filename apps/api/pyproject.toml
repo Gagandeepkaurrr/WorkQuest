@@ -2,14 +2,37 @@
 name = "workquest-api"
 version = "0.1.0"
 requires-python = ">=3.14,<3.15"
-dependencies = []
+dependencies = [
+    "alembic==1.20.1",
+    "celery[redis]==5.7.0",
+    "cryptography==50.0.2",
+    "email-validator==2.3.0",
+    "fastapi[standard]==0.162.4",
+    "google-genai==3.1.0",
+    "prometheus-client==0.26.0",
+    "psycopg[binary,pool]==3.3.8",
+    "pwdlib[argon2]==0.3.1",
+    "pydantic-settings==2.16.2",
+    "redis==8.1.0",
+    "sqlalchemy[asyncio]>=2,<2.1",
+    "structlog==26.1.0",
+]
 
 [dependency-groups]
-dev = []
+dev = [
+    "httpx==0.28.1",
+    "hypothesis==6.170.15",
+    "mypy==2.4.1",
+    "pip-audit==2.10.1",
+    "pytest==9.2.0",
+    "pytest-asyncio==1.4.1.post1",
+    "ruff==0.17.4",
+]
 
 [tool.pytest.ini_options]
 pythonpath = ["."]
 asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
 testpaths = ["tests"]
 
 [tool.ruff]

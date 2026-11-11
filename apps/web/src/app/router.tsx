@@ -1,0 +1,12 @@
+import { createBrowserRouter,Link } from 'react-router'
+import { Landing } from '../features/missions/landing'
+import { AuthPage } from '../features/auth/auth-page'
+import { Library } from '../features/missions/library'
+import { Briefing } from '../features/missions/briefing'
+import { Workspace } from '../features/workspace/workspace'
+import { Debrief } from '../features/debrief/debrief'
+import { Compare } from '../features/branches/compare'
+import { Progress } from '../features/progress/progress'
+import { PublicReportPage } from '../features/reports/public-report'
+import { ProtectedShell } from '../components/layout/shell'
+export const router=createBrowserRouter([{path:'/',element:<Landing/>},...['sign-in','sign-up','verify-email','forgot-password','reset-password'].map(path=>({path:`/${path}`,element:<AuthPage/>})),{element:<ProtectedShell/>,children:[{path:'/missions',element:<Library/>},{path:'/missions/:slug',element:<Briefing/>},{path:'/runs/:runId',element:<Workspace/>},{path:'/runs/:runId/debrief',element:<Debrief/>},{path:'/runs/:runId/compare',element:<Compare/>},{path:'/progress',element:<Progress/>}]},{path:'/reports/:token',element:<PublicReportPage/>},{path:'*',element:<main className="empty"><h1>This page is unavailable.</h1><Link to="/">Return home</Link></main>}])

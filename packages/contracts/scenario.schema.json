@@ -1,0 +1,550 @@
+{
+  "$defs": {
+    "Action": {
+      "additionalProperties": false,
+      "properties": {
+        "cost": {
+          "maximum": 3,
+          "minimum": 0,
+          "title": "Cost",
+          "type": "integer"
+        },
+        "description": {
+          "title": "Description",
+          "type": "string"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "label": {
+          "title": "Label",
+          "type": "string"
+        },
+        "mutation": {
+          "default": true,
+          "title": "Mutation",
+          "type": "boolean"
+        },
+        "parameters": {
+          "items": {
+            "$ref": "#/$defs/Parameter"
+          },
+          "maxItems": 5,
+          "title": "Parameters",
+          "type": "array"
+        },
+        "requires": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 10,
+          "title": "Requires",
+          "type": "array"
+        },
+        "target": {
+          "default": "Simulated service",
+          "title": "Target",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "label",
+        "description",
+        "cost"
+      ],
+      "title": "Action",
+      "type": "object"
+    },
+    "Artifact": {
+      "additionalProperties": false,
+      "properties": {
+        "body": {
+          "maxLength": 30000,
+          "title": "Body",
+          "type": "string"
+        },
+        "first_open_cost": {
+          "const": 1,
+          "default": 1,
+          "title": "First Open Cost",
+          "type": "integer"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "requires": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 10,
+          "title": "Requires",
+          "type": "array"
+        },
+        "teammate": {
+          "enum": [
+            "maya",
+            "leo"
+          ],
+          "title": "Teammate",
+          "type": "string"
+        },
+        "title": {
+          "title": "Title",
+          "type": "string"
+        },
+        "type": {
+          "enum": [
+            "text",
+            "markdown",
+            "log",
+            "table",
+            "diagram"
+          ],
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "title",
+        "type",
+        "body",
+        "teammate"
+      ],
+      "title": "Artifact",
+      "type": "object"
+    },
+    "Choice": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "label": {
+          "title": "Label",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "label"
+      ],
+      "title": "Choice",
+      "type": "object"
+    },
+    "Fact": {
+      "additionalProperties": false,
+      "properties": {
+        "artifact_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Artifact Id"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "teammates": {
+          "items": {
+            "enum": [
+              "maya",
+              "leo"
+            ],
+            "type": "string"
+          },
+          "title": "Teammates",
+          "type": "array"
+        },
+        "text": {
+          "maxLength": 2000,
+          "title": "Text",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "text",
+        "teammates"
+      ],
+      "title": "Fact",
+      "type": "object"
+    },
+    "Hint": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "requires": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Requires",
+          "type": "array"
+        },
+        "text": {
+          "title": "Text",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "text"
+      ],
+      "title": "Hint",
+      "type": "object"
+    },
+    "Metadata": {
+      "additionalProperties": false,
+      "properties": {
+        "briefing": {
+          "maxLength": 6000,
+          "title": "Briefing",
+          "type": "string"
+        },
+        "company": {
+          "maxLength": 80,
+          "title": "Company",
+          "type": "string"
+        },
+        "description": {
+          "maxLength": 500,
+          "title": "Description",
+          "type": "string"
+        },
+        "difficulty": {
+          "enum": [
+            "Beginner",
+            "Intermediate"
+          ],
+          "title": "Difficulty",
+          "type": "string"
+        },
+        "duration": {
+          "maxLength": 40,
+          "title": "Duration",
+          "type": "string"
+        },
+        "objectives": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 10,
+          "minItems": 4,
+          "title": "Objectives",
+          "type": "array"
+        },
+        "role": {
+          "maxLength": 80,
+          "title": "Role",
+          "type": "string"
+        },
+        "tags": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 10,
+          "title": "Tags",
+          "type": "array"
+        },
+        "title": {
+          "maxLength": 120,
+          "title": "Title",
+          "type": "string"
+        }
+      },
+      "required": [
+        "title",
+        "description",
+        "company",
+        "role",
+        "difficulty",
+        "duration",
+        "tags",
+        "briefing",
+        "objectives"
+      ],
+      "title": "Metadata",
+      "type": "object"
+    },
+    "Parameter": {
+      "additionalProperties": false,
+      "properties": {
+        "choices": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 10,
+          "title": "Choices",
+          "type": "array"
+        },
+        "label": {
+          "title": "Label",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "type": {
+          "enum": [
+            "boolean",
+            "enum"
+          ],
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "label",
+        "type"
+      ],
+      "title": "Parameter",
+      "type": "object"
+    },
+    "Rubric": {
+      "additionalProperties": false,
+      "properties": {
+        "cause_id": {
+          "title": "Cause Id",
+          "type": "string"
+        },
+        "diagnosis_artifacts": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 2,
+          "minItems": 2,
+          "title": "Diagnosis Artifacts",
+          "type": "array"
+        },
+        "explanation": {
+          "title": "Explanation",
+          "type": "string"
+        },
+        "weights": {
+          "additionalProperties": {
+            "type": "integer"
+          },
+          "title": "Weights",
+          "type": "object"
+        }
+      },
+      "required": [
+        "cause_id",
+        "diagnosis_artifacts",
+        "explanation"
+      ],
+      "title": "Rubric",
+      "type": "object"
+    },
+    "Teammate": {
+      "additionalProperties": false,
+      "properties": {
+        "fallback": {
+          "title": "Fallback",
+          "type": "string"
+        },
+        "id": {
+          "enum": [
+            "maya",
+            "leo"
+          ],
+          "title": "Id",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "persona": {
+          "title": "Persona",
+          "type": "string"
+        },
+        "role": {
+          "title": "Role",
+          "type": "string"
+        },
+        "welcome": {
+          "title": "Welcome",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "role",
+        "persona",
+        "fallback",
+        "welcome"
+      ],
+      "title": "Teammate",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "action_catalog": {
+      "items": {
+        "$ref": "#/$defs/Action"
+      },
+      "maxItems": 30,
+      "title": "Action Catalog",
+      "type": "array"
+    },
+    "artifacts": {
+      "items": {
+        "$ref": "#/$defs/Artifact"
+      },
+      "maxItems": 30,
+      "minItems": 3,
+      "title": "Artifacts",
+      "type": "array"
+    },
+    "content_version": {
+      "minimum": 1,
+      "title": "Content Version",
+      "type": "integer"
+    },
+    "diagnosis_choices": {
+      "items": {
+        "$ref": "#/$defs/Choice"
+      },
+      "maxItems": 6,
+      "minItems": 3,
+      "title": "Diagnosis Choices",
+      "type": "array"
+    },
+    "engine_version": {
+      "const": "1",
+      "default": "1",
+      "title": "Engine Version",
+      "type": "string"
+    },
+    "facts": {
+      "items": {
+        "$ref": "#/$defs/Fact"
+      },
+      "maxItems": 100,
+      "title": "Facts",
+      "type": "array"
+    },
+    "golden_commands": {
+      "items": {
+        "additionalProperties": true,
+        "type": "object"
+      },
+      "maxItems": 50,
+      "title": "Golden Commands",
+      "type": "array"
+    },
+    "golden_expected": {
+      "additionalProperties": true,
+      "title": "Golden Expected",
+      "type": "object"
+    },
+    "hints": {
+      "items": {
+        "$ref": "#/$defs/Hint"
+      },
+      "maxItems": 5,
+      "minItems": 2,
+      "title": "Hints",
+      "type": "array"
+    },
+    "initial_state": {
+      "additionalProperties": true,
+      "title": "Initial State",
+      "type": "object"
+    },
+    "mechanics_id": {
+      "enum": [
+        "checkout_v1",
+        "inventory_v1",
+        "analytics_v1"
+      ],
+      "title": "Mechanics Id",
+      "type": "string"
+    },
+    "metadata": {
+      "$ref": "#/$defs/Metadata"
+    },
+    "negative_paths": {
+      "items": {
+        "items": {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        "type": "array"
+      },
+      "maxItems": 20,
+      "title": "Negative Paths",
+      "type": "array"
+    },
+    "rubric": {
+      "$ref": "#/$defs/Rubric"
+    },
+    "scenario_id": {
+      "title": "Scenario Id",
+      "type": "string"
+    },
+    "schema_version": {
+      "const": "1",
+      "default": "1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "scoring_version": {
+      "const": "1",
+      "default": "1",
+      "title": "Scoring Version",
+      "type": "string"
+    },
+    "slug": {
+      "title": "Slug",
+      "type": "string"
+    },
+    "teammates": {
+      "items": {
+        "$ref": "#/$defs/Teammate"
+      },
+      "maxItems": 2,
+      "minItems": 2,
+      "title": "Teammates",
+      "type": "array"
+    }
+  },
+  "required": [
+    "scenario_id",
+    "slug",
+    "content_version",
+    "mechanics_id",
+    "metadata",
+    "initial_state",
+    "teammates",
+    "facts",
+    "artifacts",
+    "action_catalog",
+    "diagnosis_choices",
+    "rubric",
+    "hints",
+    "golden_commands",
+    "golden_expected",
+    "negative_paths"
+  ],
+  "title": "Scenario",
+  "type": "object"
+}

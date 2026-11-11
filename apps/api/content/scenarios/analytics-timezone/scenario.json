@@ -1,0 +1,318 @@
+{
+  "schema_version": "1",
+  "content_version": 1,
+  "engine_version": "1",
+  "scoring_version": "1",
+  "scenario_id": "analytics-timezone",
+  "slug": "analytics-timezone",
+  "mechanics_id": "analytics_v1",
+  "metadata": {
+    "title": "The drop that wasn\u2019t.",
+    "description": "Paid conversion appears to have fallen overnight. Separate a behavior change from a reporting error, then publish a verified explanation.",
+    "company": "Daylight Studio",
+    "role": "Data engineer",
+    "difficulty": "Intermediate",
+    "duration": "20\u201330 minutes",
+    "tags": [
+      "Analytics",
+      "Time zones",
+      "Validation"
+    ],
+    "briefing": "Welcome to Daylight Studio, a fictional commerce team. Daily paid conversion appears to fall from 60% to 40%. The store uses America/Los_Angeles. Maya can discuss source ingestion and Leo knows the business-date requirement. Inspect timestamped sources and transformations, repair the materialized report and publish a verified simulated stakeholder update. The dataset is frozen: logical ticks never create payments. A winter boundary fixture tests the transformation but never contributes to incident totals. Cap: 20 simulated minutes. Score: diagnosis 20, outcome 40, verification 20, structured communication 10, judgment 10.",
+    "objectives": [
+      "Use the named store time zone",
+      "Correct both affected daily report rows",
+      "Preserve 90 orders and $9,000 across affected dates",
+      "Publish a current correct verified report"
+    ]
+  },
+  "initial_state": {
+    "normalization": "utc",
+    "report_mode": "utc",
+    "source_hash": "e0f83d9dd372086efdb121787dab74620797ec4334c40269c820e0800912bdf6",
+    "rows": [
+      {
+        "date": "2025-07-15",
+        "sessions": 100,
+        "orders": 40,
+        "revenue_cents": 400000,
+        "conversion_percentage": 40
+      },
+      {
+        "date": "2025-07-16",
+        "sessions": 50,
+        "orders": 50,
+        "revenue_cents": 500000,
+        "conversion_percentage": 100
+      }
+    ],
+    "publications": [],
+    "incorrect_publications": 0
+  },
+  "teammates": [
+    {
+      "id": "maya",
+      "name": "Maya",
+      "role": "Platform engineer",
+      "persona": "Be concise, grounded, and explicit about missing evidence. Never execute actions.",
+      "welcome": "The ingestion run completed. Let\u2019s inspect the source timestamps before blaming customer behavior.",
+      "fallback": "I can confirm ingestion status, but we need to open the sources to discuss the actual records."
+    },
+    {
+      "id": "leo",
+      "name": "Leo",
+      "role": "Product / data engineer",
+      "persona": "Be concise, grounded, and explicit about missing evidence. Never execute actions.",
+      "welcome": "The business expects store-local reporting dates. Let\u2019s inspect how each dataset is grouped.",
+      "fallback": "The business-date requirement is store local. Open the transforms before we infer their implementation."
+    }
+  ],
+  "artifacts": [
+    {
+      "id": "analytics.sources",
+      "title": "Session and payment sources",
+      "type": "table",
+      "teammate": "maya",
+      "body": "HISTORICAL INCIDENT EVIDENCE \u00b7 frozen affected dates\nStore zone: America/Los_Angeles. Every order is $100. Ingestion completed with no missing or duplicate payment IDs.\npaid_at_utc,orders,revenue\n2025-07-15T17:00:00Z,40,$4000\n2025-07-16T02:00:00Z,20,$2000\n2025-07-16T17:00:00Z,30,$3000\nLocal-date sessions: July 15 = 100; July 16 = 50.\nBaseline July 14 conversion = 60% is context only and excluded from affected-date totals. Affected-date totals: 90 paid orders, $9000.",
+      "requires": []
+    },
+    {
+      "id": "analytics.transforms",
+      "title": "Business-date transformations",
+      "type": "diagram",
+      "teammate": "leo",
+      "body": "HISTORICAL INCIDENT EVIDENCE \u00b7 t=0\nSessions \u2192 America/Los_Angeles business date \u2192 group by date.\nPayments \u2192 extract UTC calendar date \u2192 group by date.\nJoin both aggregates on date.\nCurrent materialized report: July 15 = 40/100, 40%, $4000; July 16 = 50/50, 100%, $5000.\nChanging a transformation does not rebuild the materialized table. A rebuild records the source and transformation fingerprints. A fixed UTC-7 offset matches summer only; the named zone follows seasonal transitions.",
+      "requires": []
+    },
+    {
+      "id": "analytics.boundary_spec",
+      "title": "Summer and winter boundary tests",
+      "type": "text",
+      "teammate": "leo",
+      "body": "ISOLATED TEST-FIXTURE OUTPUT SPECIFICATION\nSummer: July 16, 2025 02:00Z \u2192 July 15 in America/Los_Angeles (UTC-7).\nWinter: January 16, 2025 07:30Z \u2192 January 15 in America/Los_Angeles (UTC-8).\nThe winter example is a separate fixture, never an incident payment.\nVerify both boundary dates and both materialized daily rows. Expected report: July 15 = 60/100, 60%, $6000; July 16 = 30/50, 60%, $3000. Totals remain 90 orders / $9000. Passing aggregate totals alone cannot establish correct daily attribution.",
+      "requires": [
+        "analytics.transforms"
+      ]
+    }
+  ],
+  "facts": [
+    {
+      "id": "analytics.ingestion",
+      "text": "The ingestion run completed.",
+      "teammates": [
+        "maya"
+      ],
+      "artifact_id": null
+    },
+    {
+      "id": "analytics.requirement",
+      "text": "Stakeholders expect store-local business dates in America/Los_Angeles.",
+      "teammates": [
+        "leo"
+      ],
+      "artifact_id": null
+    },
+    {
+      "id": "analytics.source_groups",
+      "text": "Sources contain 40 payments at July 15 17:00Z, 20 at July 16 02:00Z, and 30 at July 16 17:00Z, with no duplicates or missing records.",
+      "teammates": [
+        "maya"
+      ],
+      "artifact_id": "analytics.sources"
+    },
+    {
+      "id": "analytics.grouping",
+      "text": "Sessions group by store-local date; payments currently extract UTC date. Configuration changes require a materialized rebuild.",
+      "teammates": [
+        "leo"
+      ],
+      "artifact_id": "analytics.transforms"
+    },
+    {
+      "id": "analytics.boundaries",
+      "text": "Summer and winter boundaries use different offsets. The named zone maps both fixtures to the previous local date; the winter fixture is excluded from incident revenue.",
+      "teammates": [
+        "leo"
+      ],
+      "artifact_id": "analytics.boundary_spec"
+    }
+  ],
+  "action_catalog": [
+    {
+      "id": "analytics.set_normalization",
+      "label": "Set payment date normalization",
+      "cost": 1,
+      "description": "Configure how payment timestamps become business dates. The materialized report is not rebuilt.",
+      "parameters": [
+        {
+          "name": "mode",
+          "label": "Normalization mode",
+          "type": "enum",
+          "choices": [
+            "utc",
+            "fixed_minus_7",
+            "named_zone"
+          ]
+        }
+      ],
+      "requires": [
+        "analytics.transforms"
+      ],
+      "mutation": true
+    },
+    {
+      "id": "analytics.rebuild",
+      "label": "Rebuild materialized report",
+      "cost": 3,
+      "description": "Recompute both affected dates and record current source and transform fingerprints.",
+      "parameters": [],
+      "requires": [],
+      "mutation": true
+    },
+    {
+      "id": "analytics.restart_ingestion",
+      "label": "Restart ingestion",
+      "cost": 1,
+      "description": "Repeat the successful ingestion process without changing grouping or source data.",
+      "parameters": [],
+      "requires": [],
+      "mutation": true
+    },
+    {
+      "id": "analytics.test_totals",
+      "label": "Verify affected-date totals",
+      "cost": 1,
+      "description": "Check report freshness, 90 unique orders, and $9,000 across affected dates.",
+      "parameters": [],
+      "requires": [
+        "analytics.sources"
+      ],
+      "mutation": false
+    },
+    {
+      "id": "analytics.test_boundaries",
+      "label": "Test summer and winter boundaries",
+      "cost": 1,
+      "description": "Check isolated seasonal boundary fixtures and both current daily rows.",
+      "parameters": [],
+      "requires": [
+        "analytics.boundary_spec"
+      ],
+      "mutation": false
+    },
+    {
+      "id": "analytics.publish",
+      "label": "Publish stakeholder report",
+      "cost": 1,
+      "description": "Store an immutable simulated report snapshot. Incorrect or unverified publications are recorded.",
+      "parameters": [],
+      "requires": [],
+      "mutation": true
+    }
+  ],
+  "diagnosis_choices": [
+    {
+      "id": "missing_payment_ingestion",
+      "label": "Payment ingestion dropped a group of orders"
+    },
+    {
+      "id": "date_bucket_timezone_mismatch",
+      "label": "The joined datasets use inconsistent time-zone date buckets"
+    },
+    {
+      "id": "real_conversion_decline",
+      "label": "Customer conversion truly declined on July 15"
+    }
+  ],
+  "rubric": {
+    "cause_id": "date_bucket_timezone_mismatch",
+    "diagnosis_artifacts": [
+      "analytics.sources",
+      "analytics.transforms"
+    ],
+    "explanation": "Sessions use store-local business dates while payments used UTC dates. Twenty late-local-evening July 15 payments landed in July 16 UTC. Normalize payment timestamps to America/Los_Angeles before extracting the date, rebuild the report, and verify both totals and summer/winter boundaries before publication. A fixed UTC-7 offset fits July but fails winter; total revenue alone cannot prove attribution."
+  },
+  "hints": [
+    {
+      "id": "analytics.hint1",
+      "text": "Compare the source timestamp groups with the report\u2019s two daily rows."
+    },
+    {
+      "id": "analytics.hint2",
+      "text": "Compare how each transform extracts a date, then check whether one fixed offset works for both boundary fixtures.",
+      "requires": [
+        "analytics.transforms"
+      ]
+    }
+  ],
+  "golden_commands": [
+    {
+      "type": "evidence.open",
+      "payload": {
+        "artifact_id": "analytics.sources"
+      }
+    },
+    {
+      "type": "evidence.open",
+      "payload": {
+        "artifact_id": "analytics.transforms"
+      }
+    },
+    {
+      "type": "evidence.open",
+      "payload": {
+        "artifact_id": "analytics.boundary_spec"
+      }
+    },
+    {
+      "type": "analytics.set_normalization",
+      "payload": {
+        "mode": "named_zone"
+      }
+    },
+    {
+      "type": "analytics.rebuild",
+      "payload": {}
+    },
+    {
+      "type": "analytics.test_totals",
+      "payload": {}
+    },
+    {
+      "type": "analytics.test_boundaries",
+      "payload": {}
+    },
+    {
+      "type": "analytics.publish",
+      "payload": {}
+    }
+  ],
+  "golden_expected": {
+    "simulation_time": 10,
+    "incorrect_publications": 0
+  },
+  "negative_paths": [
+    [
+      {
+        "type": "analytics.restart_ingestion",
+        "payload": {}
+      }
+    ],
+    [
+      {
+        "type": "evidence.open",
+        "payload": {
+          "artifact_id": "analytics.sources"
+        }
+      },
+      {
+        "type": "analytics.test_totals",
+        "payload": {}
+      },
+      {
+        "type": "analytics.publish",
+        "payload": {}
+      }
+    ]
+  ]
+}

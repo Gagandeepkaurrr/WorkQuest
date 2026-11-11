@@ -1,0 +1,381 @@
+{
+  "schema_version": "1",
+  "content_version": 1,
+  "engine_version": "1",
+  "scoring_version": "1",
+  "scenario_id": "inventory-race",
+  "slug": "inventory-race",
+  "mechanics_id": "inventory_v1",
+  "metadata": {
+    "title": "One item. Two promises.",
+    "description": "A flash sale is selling stock twice. Stop the oversells, repair the race, and reconcile the promises already made.",
+    "company": "Common Goods",
+    "role": "Backend engineer",
+    "difficulty": "Intermediate",
+    "duration": "25\u201335 minutes",
+    "tags": [
+      "Concurrency",
+      "Data integrity",
+      "Tradeoffs"
+    ],
+    "briefing": "Welcome to Common Goods, a fictional shop running a flash sale. Distinct customers received reservations for the same stock. Ten invalid reservations already exist. Maya owns the reservation service; Leo knows the stock ledger. You can serialize requests, suspend sales, deploy a reviewed patch and reconcile invalid reservations. Each simulated minute brings a fresh lot of 20 units and 25 requests. Isolated tests do not add fixture reservations to the incident ledger. The logical cap is 20; reading speed and chat are free. Score: diagnosis 20, outcome 40, verification 20, structured communication 10, judgment 10.",
+    "objectives": [
+      "Deploy atomic reservations without queue serialization",
+      "Stop new oversells",
+      "Reconcile every invalid reservation",
+      "Keep sales running with 20 of 25 requests accepted"
+    ]
+  },
+  "initial_state": {
+    "sales": "running",
+    "queue": false,
+    "patch": "legacy",
+    "invalid_reservations": 10,
+    "invalid_ids": [
+      "INIT-01",
+      "INIT-02",
+      "INIT-03",
+      "INIT-04",
+      "INIT-05",
+      "INIT-06",
+      "INIT-07",
+      "INIT-08",
+      "INIT-09",
+      "INIT-10"
+    ],
+    "legitimate_ids": [
+      "INIT-L001",
+      "INIT-L002",
+      "INIT-L003",
+      "INIT-L004",
+      "INIT-L005",
+      "INIT-L006",
+      "INIT-L007",
+      "INIT-L008",
+      "INIT-L009",
+      "INIT-L010",
+      "INIT-L011",
+      "INIT-L012",
+      "INIT-L013",
+      "INIT-L014",
+      "INIT-L015",
+      "INIT-L016",
+      "INIT-L017",
+      "INIT-L018",
+      "INIT-L019",
+      "INIT-L020",
+      "INIT-L021",
+      "INIT-L022",
+      "INIT-L023",
+      "INIT-L024",
+      "INIT-L025",
+      "INIT-L026",
+      "INIT-L027",
+      "INIT-L028",
+      "INIT-L029",
+      "INIT-L030",
+      "INIT-L031",
+      "INIT-L032",
+      "INIT-L033",
+      "INIT-L034",
+      "INIT-L035",
+      "INIT-L036",
+      "INIT-L037",
+      "INIT-L038",
+      "INIT-L039",
+      "INIT-L040"
+    ],
+    "cancelled_invalid_ids": [],
+    "new_oversells": 0,
+    "lost_sales": 0
+  },
+  "teammates": [
+    {
+      "id": "maya",
+      "name": "Maya",
+      "role": "Platform engineer",
+      "persona": "Be concise, grounded, and explicit about missing evidence. Never execute actions.",
+      "welcome": "The reservation alert is active. We should inspect the request trace before choosing a patch.",
+      "fallback": "I know the alert is active. Open the trace to inspect the concurrency behavior together."
+    },
+    {
+      "id": "leo",
+      "name": "Leo",
+      "role": "Product / data engineer",
+      "persona": "Be concise, grounded, and explicit about missing evidence. Never execute actions.",
+      "welcome": "Our invariant is simple: accepted reservations cannot exceed physical stock. Let\u2019s inspect the ledger.",
+      "fallback": "Open the ledger so I can discuss the stock and reservations that actually exist."
+    }
+  ],
+  "artifacts": [
+    {
+      "id": "inventory.trace",
+      "title": "Concurrent reservation trace",
+      "type": "log",
+      "teammate": "maya",
+      "body": "HISTORICAL INCIDENT EVIDENCE \u00b7 t=0\nSKU contested-01 stock=1\nrequest R16 idempotency-key=k16 READ stock=1\nrequest R21 idempotency-key=k21 READ stock=1\nrequest R16 WRITE stock=0; INSERT reservation R16\nrequest R21 WRITE stock=0; INSERT reservation R21\nBoth requests are distinct, not retries. The same interleaving occurs for five contested SKUs. A legacy tick accepts 25 requests against 20 units.",
+      "requires": []
+    },
+    {
+      "id": "inventory.ledger",
+      "title": "Stock and reservation ledger",
+      "type": "table",
+      "teammate": "leo",
+      "body": "HISTORICAL INCIDENT EVIDENCE \u00b7 t=0\nlot,physical_units,accepted_reservations,invalid\nprior-A,20,25,5\nprior-B,20,25,5\nInitial invalid IDs: INIT-01 through INIT-10. Forty legitimate prior reservations must remain.\nEach new lot: fifteen ordinary SKUs and five contested SKUs, one unit each. R01\u2013R15 buy ordinary SKUs. R16\u2013R20 compete with R21\u2013R25 for contested stock. The later five reservations are invalid under the legacy schedule. Current invalid IDs are recorded as T{tick}-R21 through R25. Reconciliation must cancel only invalid reservations.",
+      "requires": []
+    },
+    {
+      "id": "inventory.patch_review",
+      "title": "Reservation patch review",
+      "type": "diagram",
+      "teammate": "maya",
+      "body": "REVIEWED IMPLEMENTATION OPTIONS \u00b7 isolated design evidence\nLegacy: read stock \u2192 check positive \u2192 write stale decrement \u2192 insert reservation.\nIdempotency-only: deduplicate a repeated request key, then execute the same legacy sequence. R16 and R21 have different keys, so the race remains.\nAtomic: in one database transaction, conditionally decrement stock WHERE available > 0 and insert a reservation only when that decrement succeeds.\nA serialization queue prevents overlapping writes but adds p95=900ms in this simulation. The atomic path needs no queue and has p95=100ms. Repairing future reservations does not cancel old invalid reservations. The race test bypasses the queue.",
+      "requires": [
+        "inventory.trace",
+        "inventory.ledger"
+      ]
+    }
+  ],
+  "facts": [
+    {
+      "id": "inventory.alert",
+      "text": "The reservation alert is active.",
+      "teammates": [
+        "maya"
+      ],
+      "artifact_id": null
+    },
+    {
+      "id": "inventory.invariant",
+      "text": "Accepted reservations must not exceed physical stock.",
+      "teammates": [
+        "leo"
+      ],
+      "artifact_id": null
+    },
+    {
+      "id": "inventory.interleaving",
+      "text": "Distinct requests with different keys both read stock=1 before writing stock=0.",
+      "teammates": [
+        "maya"
+      ],
+      "artifact_id": "inventory.trace"
+    },
+    {
+      "id": "inventory.backlog",
+      "text": "Two historical lots each accepted 25 reservations for 20 units. Ten initial invalid reservations require reconciliation; forty legitimate reservations must remain.",
+      "teammates": [
+        "leo"
+      ],
+      "artifact_id": "inventory.ledger"
+    },
+    {
+      "id": "inventory.options",
+      "text": "Idempotency-only retains the race for distinct keys. The reviewed atomic transaction conditionally decrements stock and inserts the reservation together. A queue contains concurrency with extra latency.",
+      "teammates": [
+        "maya"
+      ],
+      "artifact_id": "inventory.patch_review"
+    }
+  ],
+  "action_catalog": [
+    {
+      "id": "inventory.set_queue",
+      "label": "Set reservation queue",
+      "cost": 1,
+      "description": "Serialize simulated reservations to contain concurrent writes, at a latency cost.",
+      "parameters": [
+        {
+          "name": "enabled",
+          "label": "Enable serialization queue",
+          "type": "boolean",
+          "choices": []
+        }
+      ],
+      "requires": [],
+      "mutation": true
+    },
+    {
+      "id": "inventory.set_sales",
+      "label": "Set sale availability",
+      "cost": 1,
+      "description": "Suspend or resume simulated sales. Suspension prevents oversells but loses sales.",
+      "parameters": [
+        {
+          "name": "status",
+          "label": "Sale status",
+          "type": "enum",
+          "choices": [
+            "running",
+            "suspended"
+          ]
+        }
+      ],
+      "requires": [],
+      "mutation": true
+    },
+    {
+      "id": "inventory.deploy_patch",
+      "label": "Deploy reservation patch",
+      "cost": 2,
+      "description": "Deploy a reviewed implementation to the simulated reservation service.",
+      "parameters": [
+        {
+          "name": "kind",
+          "label": "Patch implementation",
+          "type": "enum",
+          "choices": [
+            "atomic",
+            "idempotency_only",
+            "legacy"
+          ]
+        }
+      ],
+      "requires": [
+        "inventory.patch_review"
+      ],
+      "mutation": true
+    },
+    {
+      "id": "inventory.reconcile",
+      "label": "Reconcile invalid reservations",
+      "cost": 2,
+      "description": "Cancel only currently invalid reservations. Requires no new oversells.",
+      "parameters": [],
+      "requires": [
+        "inventory.ledger"
+      ],
+      "mutation": true
+    },
+    {
+      "id": "inventory.test_race",
+      "label": "Test concurrent reservations",
+      "cost": 1,
+      "description": "Run the isolated 25-request race fixture, bypassing the queue.",
+      "parameters": [],
+      "requires": [],
+      "mutation": false
+    },
+    {
+      "id": "inventory.test_ledger",
+      "label": "Verify ledger and throughput",
+      "cost": 1,
+      "description": "Check invalid reservations, retained legitimate reservations, and current live throughput.",
+      "parameters": [],
+      "requires": [],
+      "mutation": false
+    }
+  ],
+  "diagnosis_choices": [
+    {
+      "id": "duplicate_retry_keys",
+      "label": "Repeated retry keys created duplicate reservations"
+    },
+    {
+      "id": "non_atomic_stock_reservation",
+      "label": "A non-atomic stock check allowed concurrent reservations"
+    },
+    {
+      "id": "warehouse_feed_lag",
+      "label": "The warehouse stock feed is delayed"
+    }
+  ],
+  "rubric": {
+    "cause_id": "non_atomic_stock_reservation",
+    "diagnosis_artifacts": [
+      "inventory.trace",
+      "inventory.ledger"
+    ],
+    "explanation": "The legacy read/check/write schedule lets distinct requests reserve the same final unit. Idempotency protects retries, not concurrent distinct purchases. Queue serialization can contain the race. The atomic patch repairs the invariant; reconciliation removes the existing invalid backlog. Full success also requires running sales without the queue and current race/ledger checks."
+  },
+  "hints": [
+    {
+      "id": "inventory.hint1",
+      "text": "Compare the request trace with the physical-stock ledger."
+    },
+    {
+      "id": "inventory.hint2",
+      "text": "Look at whether the two requests have the same key, and compare the reviewed atomic boundary with the legacy sequence.",
+      "requires": [
+        "inventory.trace",
+        "inventory.ledger"
+      ]
+    }
+  ],
+  "golden_commands": [
+    {
+      "type": "inventory.set_queue",
+      "payload": {
+        "enabled": true
+      }
+    },
+    {
+      "type": "evidence.open",
+      "payload": {
+        "artifact_id": "inventory.trace"
+      }
+    },
+    {
+      "type": "evidence.open",
+      "payload": {
+        "artifact_id": "inventory.ledger"
+      }
+    },
+    {
+      "type": "evidence.open",
+      "payload": {
+        "artifact_id": "inventory.patch_review"
+      }
+    },
+    {
+      "type": "inventory.deploy_patch",
+      "payload": {
+        "kind": "atomic"
+      }
+    },
+    {
+      "type": "inventory.reconcile",
+      "payload": {}
+    },
+    {
+      "type": "inventory.set_queue",
+      "payload": {
+        "enabled": false
+      }
+    },
+    {
+      "type": "inventory.test_race",
+      "payload": {}
+    },
+    {
+      "type": "inventory.test_ledger",
+      "payload": {}
+    }
+  ],
+  "golden_expected": {
+    "simulation_time": 11,
+    "new_oversells": 0,
+    "lost_sales": 0,
+    "invalid_reservations": 0
+  },
+  "negative_paths": [
+    [
+      {
+        "type": "inventory.set_sales",
+        "payload": {
+          "status": "suspended"
+        }
+      },
+      {
+        "type": "inventory.test_ledger",
+        "payload": {}
+      }
+    ],
+    [
+      {
+        "type": "inventory.test_race",
+        "payload": {}
+      }
+    ]
+  ]
+}

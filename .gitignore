@@ -17,3 +17,5 @@ playwright-report/
 .DS_Store
 *.dump
 *.log
+*.tsbuildinfo
+.hypothesis/
