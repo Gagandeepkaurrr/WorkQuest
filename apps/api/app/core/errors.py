@@ -8,4 +8,4 @@ class AppError(Exception):
 
 
 def unavailable() -> AppError:
-    return AppError('NOT_FOUND', 'This resource is unavailable.', 404)
+    return AppError("NOT_FOUND", "This resource is unavailable.", 404)

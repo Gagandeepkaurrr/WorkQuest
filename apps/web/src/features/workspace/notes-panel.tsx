@@ -1,12 +1,95 @@
-import { useState,useEffect } from 'react'
-import { useQuery,useQueryClient } from '@tanstack/react-query'
-import { Save } from 'lucide-react'
-import { api,write } from '../../lib/api-client'
-import { Button } from '../../components/ui/button'
-import { ErrorState,Loading } from '../../components/feedback/states'
-export function NotesPanel({branchId}:{branchId:string}){const key=`wq:notes:${branchId}`;const client=useQueryClient();const [draft,setDraft]=useState<string|null>(()=>sessionStorage.getItem(key));const [busy,setBusy]=useState(false);const [error,setError]=useState<unknown>();const [saved,setSaved]=useState(false);const notes=useQuery({queryKey:['notes',branchId],queryFn:()=>api<{body:string;revision:number}>(`/branches/${branchId}/notes`)})
-const dirty=draft!==null&&draft!==notes.data?.body
-useEffect(()=>{const listener=(e:BeforeUnloadEvent)=>{if(dirty)e.preventDefault()};window.addEventListener('beforeunload',listener);return()=>window.removeEventListener('beforeunload',listener)},[dirty])
-if(notes.isPending)return <Loading/>;if(notes.error||!notes.data)return <ErrorState error={notes.error}/>
-async function save(){setBusy(true);setError(undefined);try{const n=await write<{body:string;revision:number}>(`/branches/${branchId}/notes`,{body:draft??notes.data?.body,expected_revision:notes.data?.revision},'PUT',crypto.randomUUID());client.setQueryData(['notes',branchId],n);sessionStorage.removeItem(key);setDraft(null);setSaved(true)}catch(e){setError(e)}finally{setBusy(false)}}
-return <div className="stack"><div className="panel-heading"><h2>Room for your thinking.</h2><p>Private notes stay with this branch. Saved notes are included in future checkpoints; notes never award points.</p></div><div className="glass content-card"><label>Your investigation notes<textarea className="notes-editor" maxLength={20000} value={draft??notes.data.body} onChange={e=>{setDraft(e.target.value);sessionStorage.setItem(key,e.target.value);setSaved(false)}} placeholder="What do you know? What do you need to check?"/></label><div className="row between"><span className="small muted" role="status">{dirty?'Unsaved draft · kept in this browser tab':saved?'Saved to this branch':'All changes saved'}</span><Button disabled={busy||!dirty} onClick={()=>void save()}><Save size={16}/>{busy?'Saving…':'Save notes'}</Button></div>{Boolean(error)&&<ErrorState error={error}/>}</div></div>}
+import { useState, useEffect } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { Save } from "lucide-react";
+import { api, write } from "../../lib/api-client";
+import { Button } from "../../components/ui/button";
+import { ErrorState, Loading } from "../../components/feedback/states";
+export function NotesPanel({ branchId }: { branchId: string }) {
+  const key = `wq:notes:${branchId}`;
+  const client = useQueryClient();
+  const [draft, setDraft] = useState<string | null>(() =>
+    sessionStorage.getItem(key),
+  );
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<unknown>();
+  const [saved, setSaved] = useState(false);
+  const notes = useQuery({
+    queryKey: ["notes", branchId],
+    queryFn: () =>
+      api<{ body: string; revision: number }>(`/branches/${branchId}/notes`),
+  });
+  const dirty = draft !== null && draft !== notes.data?.body;
+  useEffect(() => {
+    const listener = (e: BeforeUnloadEvent) => {
+      if (dirty) e.preventDefault();
+    };
+    window.addEventListener("beforeunload", listener);
+    return () => window.removeEventListener("beforeunload", listener);
+  }, [dirty]);
+  if (notes.isPending) return <Loading />;
+  if (notes.error || !notes.data) return <ErrorState error={notes.error} />;
+  async function save() {
+    setBusy(true);
+    setError(undefined);
+    try {
+      const n = await write<{ body: string; revision: number }>(
+        `/branches/${branchId}/notes`,
+        {
+          body: draft ?? notes.data?.body,
+          expected_revision: notes.data?.revision,
+        },
+        "PUT",
+        crypto.randomUUID(),
+      );
+      client.setQueryData(["notes", branchId], n);
+      sessionStorage.removeItem(key);
+      setDraft(null);
+      setSaved(true);
+    } catch (e) {
+      setError(e);
+    } finally {
+      setBusy(false);
+    }
+  }
+  return (
+    <div className="stack">
+      <div className="panel-heading">
+        <h2>Room for your thinking.</h2>
+        <p>
+          Private notes stay with this branch. Saved notes are included in
+          future checkpoints; notes never award points.
+        </p>
+      </div>
+      <div className="glass content-card">
+        <label>
+          Your investigation notes
+          <textarea
+            className="notes-editor"
+            maxLength={20000}
+            value={draft ?? notes.data.body}
+            onChange={(e) => {
+              setDraft(e.target.value);
+              sessionStorage.setItem(key, e.target.value);
+              setSaved(false);
+            }}
+            placeholder="What do you know? What do you need to check?"
+          />
+        </label>
+        <div className="row between">
+          <span className="small muted" role="status">
+            {dirty
+              ? "Unsaved draft · kept in this browser tab"
+              : saved
+                ? "Saved to this branch"
+                : "All changes saved"}
+          </span>
+          <Button disabled={busy || !dirty} onClick={() => void save()}>
+            <Save size={16} />
+            {busy ? "Saving…" : "Save notes"}
+          </Button>
+        </div>
+        {Boolean(error) && <ErrorState error={error} />}
+      </div>
+    </div>
+  );
+}

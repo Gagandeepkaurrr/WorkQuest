@@ -1,52 +1,44 @@
-# Build status
+# WorkQuest build status
 
-Updated: 2026-11-11 (Asia/Kolkata)
+Updated: 2026-11-12, Asia/Kolkata. Repository: `/Users/gaggu/WorkQuest`. Authorized GitHub destination: **Gagandeepkaurrr/WorkQuest only**.
 
-Status: implementation in progress. No release or integration success claimed.
-
-## Inspection
-
-Read all 1,617 lines of the supplied specification. Repository initially empty; no AGENTS.md found in applicable parent paths. Docker Desktop and Compose are available on Apple Silicon. Host Node is 26.13.0; pnpm 11.25.0; uv 0.13.6. Dependencies and runtime compatibility still being established.
+**Local release candidate verified; Git publication in progress. Hosted release remains gated.** The complete 1,617-line supplied specification is preserved in PROJECT_SPECIFICATION.txt. The repository was initially empty; no applicable AGENTS.md existed. User styling instructions supersede the dark-default specification.
 
 ## Milestones
 
-1. Foundation/accounts: IN PROGRESS
-2. Checkout engine: NOT STARTED
-3. Persisted workspace: NOT STARTED
-4. AI/jobs/events: NOT STARTED
-5. Branches/reports: NOT STARTED
-6. Remaining scenarios/admin: NOT STARTED
-7. Product/operations: NOT STARTED
-8. Release verification: NOT STARTED
+| Milestone | Status | Implemented and verified evidence |
+|---|---|---|
+| 1. Foundation, contracts, accounts | Implemented | Locked React/FastAPI/PostgreSQL stack; migrations; Argon2, opaque sessions, CSRF/origin, encrypted single-use email/reset; account preferences/export/deletion; PostgreSQL auth tests |
+| 2. First deterministic mission | Implemented | Checkout reference t=10, 30 failed purchases, score=100; negative/cap/property/fingerprint/replay tests |
+| 3. Persistent workspace | Implemented | Seven panels, PostgreSQL commands/events, exact idempotency and revision conflicts, atomic rollback, evidence/notes; browser completion and reload |
+| 4. Teammates and durable work | Implemented locally | Mock and Gemini adapters; server-filtered context; PostgreSQL jobs/outbox, Celery, quota reservations, fenced leases, retries/cancellation, SSE; mock/fault tests pass; real Gemini unverified |
+| 5. Branches, debrief, progress | Implemented | Immutable checkpoints, independent forks/notes/transcripts, deterministic debrief, replay/comparison, first/latest/best progress, sanitized expiring/revocable shares |
+| 6. Remaining missions and admin | Implemented | Inventory t=11/zero new oversells/100; analytics t=10/90 orders/$9,000/100; draft import/edit/hash validation/copied preview/publish/archive/audit; DB immutability triggers |
+| 7. Product and operations | Implemented locally | White/glass/pegboard responsive UI; keyboard/mobile checks; metrics, cleanup, non-root images, CI, production Compose, Render/Vercel setup, local restore and load exercise |
+| 8. Release review | Local checks complete | Full verification, 8 browser journeys, independent review and corrected findings, image scans, container smoke and documentation completed. Git push/hosted CI pending. |
 
-## Verification evidence
+## Executed verification
 
-- `docker version` / `docker compose version`: available, server 29.9.2 / Compose 5.6.1.
-- No application tests run yet.
+- `make setup`: PASS with existing `.env` preserved; locked install, PostgreSQL/Redis/Mailpit readiness, migrations/seed, disposable test database and Chromium.
+- `make verify`: PASS — Ruff lint/format; mypy **85 source files**; **45 backend tests** on PostgreSQL 18.6/Redis; three exact scenario vectors; generated OpenAPI/TypeScript drift check; ESLint; **9 frontend tests**; production TypeScript/Vite build.
+- Browser suite: **8/8** desktop/mobile keyboard journeys passed (47.1s), all three missions including checkout chat/notes/replay/share/revoke/fork/compare; debrief axe had zero violations in the tested views. Settings/theme/reduced-motion persistence, run archive/restart and account deletion also passed.
+- `make load`: PASS — **20 learners, 301.41 seconds, 6,045 requests, zero unexpected errors**. Read p95 **28.34ms**, command p95 **91.14ms**. Apple M5/16GB/macOS26.6, local PostgreSQL18.6/Redis8.4, mock AI. Dataset 160 runs/branches, 3,582 events, 140 scorecards, 20 jobs. Real model latency/hosted capacity excluded. [Measured report](verification/load-report.json).
+- `make backup-restore`: PASS — disposable restore, prior seeded migration upgrade, pinned scenario/checkpoint/replay hash verification. [Report](verification/restore-report.json). Production remote backup/RPO/RTO unverified.
+- Package audits: pnpm production audit and pip-audit passed with zero reported vulnerabilities; bounded source scan found zero known credential patterns. Not an exhaustive entropy/security audit. [Summary](verification/package-audit-summary.json).
+- Production API/web images built locally. Latest API and frontend high/critical Docker Scout scans: zero on local arm64 images. Final non-root/read-only container smoke passed: readiness, SPA/API/auth/run, inherited CSP, no-store, report noindex, restricted metrics. Scans are time-, architecture- and severity-specific, not a guarantee of no vulnerabilities.
+- Render file passes the official published JSON schema locally. Actual `render blueprints validate` in an account, paid provisioning and Vercel build/deploy are not performed.
 
-## External gates
+## Independent review and corrections
 
-Live Gemini, external SMTP, public TLS, deployed backup target and deployment smoke checks: NOT VERIFIED. No credentials or deployment authorization supplied.
+A fresh-context reviewer inspected the complete working tree. Corrected: reset/login race via owner-first locks; uncertain writes retain idempotency keys after 401/403/429; library provides archive controls and pagination for learner/demo/preview runs; workspace explains skipped automatic checkpoints; uncertain shares retain the previously approved alias/expiry. Targeted auth/config/release-boundary tests: 17 passed. Hosted proxy identity was retained as an explicit launch blocker, not hidden by wildcard proxy trust.
 
-Next: lock dependencies, start isolated PostgreSQL/Redis/Mailpit, write failing account tests and implement the first slice.
+## Live and deployment gates — NOT VERIFIED
 
-## First implementation evidence
+- Gemini: no live key/billable probe or real-model adversarial evaluation.
+- External SMTP: only local Mailpit delivery verified; real sender/DNS/TLS/delivery required.
+- Render/Vercel: no account provisioning, hosted build, TLS/secure-cookie/streaming/cache/log-redaction smoke test or real capacity measurement.
+- Trusted proxy identity: Render/Vercel forwarded client-IP chain must be verified/configured before multi-user signup. Default conservative trust can group clients under ingress authentication limits. Single-origin Compose has an exact configured trust chain; its public deployment is also unverified.
+- Offsite encrypted backups, alert delivery, measured production RPO24h/RTO4h: not configured or rehearsed.
+- GitHub-hosted CI: pending first push; local equivalent checks have run.
 
-- `uv run pytest tests/unit/test_config.py tests/integration/test_auth.py -q`: 5 passed against PostgreSQL 18.6.
-- `uv run alembic upgrade head`: clean local and disposable test migrations passed.
-- `pnpm build`: passed (TypeScript and Vite), initial bundle-size advisory remains for later splitting.
-- `uv run pytest tests/unit/test_checkout.py tests/unit/test_config.py tests/integration/test_auth.py -q`: 10 passed, including exact checkout score/time/harm, negative paths, fingerprints, cap, purity, bounded-score properties.
-- M1 account backend and shell implemented; local email delivery and UI walkthrough still pending. M2 checkout engine checks passed. M3 transaction services in progress.
-
-## Milestones 3–6 progress
-
-- `uv run pytest tests/integration/test_runs.py -q`: 3 passed on PostgreSQL: isolation, duplicate key race, revision conflict, rollback, exact persisted checkout score.
-- `uv run pytest tests/unit/test_ai.py tests/integration/test_jobs.py -q`: 6 passed: authorized context, injection refusal in mock, unsafe outputs, stale/cancelled publication, expired leases and duplicate fencing.
-- `uv run pytest tests/integration/test_branches.py -q`: 2 passed: snapshot/notes isolation, parent immutability, replay hash, pending-dialogue rejection, sanitized encrypted share replay and immediate revocation.
-- `uv run pytest tests/unit/test_other_scenarios.py -q`: 4 passed: exact inventory t=11/zero new oversells, analytics t=10/90 orders/$9000, negative paths and isolated fixtures.
-- `uv run pytest -q` at pre-admin checkpoint: 25 passed. Later additions need a fresh complete run.
-- Browser checkout walkthrough reached 100-point debrief, saved/reloaded notes, mock reply, matching replay, and zero axe violations on debrief. Initial runs failed on test locator/panel assumptions; full browser gate still pending rerun, not marked PASS.
-- Frontend builds pass. Route splitting and bundle-size warning remain to address.
-- Admin hash-bound validation and immutable preview tests are being added. Settings/admin UI, operational scripts, broader fault/security tests, full mobile E2E, load/restore and final review remain.
-
-Next: finish settings and admin interfaces, complete browser walkthroughs, then harden and run all release checks. No live provider, external email, TLS or public deployment has been attempted.
+Next: commit and push only to WorkQuest, then inspect GitHub CI. See [deployment commands](DEPLOY_RENDER_VERCEL.md), [operations](OPERATIONS.md), [limitations](KNOWN_LIMITATIONS.md), and [acceptance mapping](REQUIREMENTS_MATRIX.md).

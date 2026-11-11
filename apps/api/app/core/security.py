@@ -4,12 +4,14 @@ import json
 import secrets
 from datetime import UTC, datetime
 from typing import Any
+
 from cryptography.fernet import Fernet
 from pwdlib import PasswordHash
+
 from app.core.config import get_settings
 
 password_hasher = PasswordHash.recommended()
-DUMMY_HASH = password_hasher.hash('not a usable account password')
+DUMMY_HASH = password_hasher.hash("not a usable account password")
 
 
 def now() -> datetime:
@@ -29,12 +31,20 @@ def equal(a: str, b: str) -> bool:
 
 
 def canonical_hash(value: Any) -> str:
-    return digest(json.dumps(value, sort_keys=True, separators=(',', ':'), ensure_ascii=False))
+    return digest(json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=False))
 
 
 def encrypt_json(value: Any) -> str:
-    return Fernet(get_settings().delivery_payload_encryption_key.get_secret_value().encode()).encrypt(json.dumps(value).encode()).decode()
+    return (
+        Fernet(get_settings().delivery_payload_encryption_key.get_secret_value().encode())
+        .encrypt(json.dumps(value).encode())
+        .decode()
+    )
 
 
 def decrypt_json(value: str) -> Any:
-    return json.loads(Fernet(get_settings().delivery_payload_encryption_key.get_secret_value().encode()).decrypt(value.encode()))
+    return json.loads(
+        Fernet(get_settings().delivery_payload_encryption_key.get_secret_value().encode()).decrypt(
+            value.encode()
+        )
+    )

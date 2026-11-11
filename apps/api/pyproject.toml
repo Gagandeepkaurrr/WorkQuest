@@ -42,6 +42,9 @@ target-version = "py314"
 [tool.ruff.lint]
 select = ["E4", "E7", "E9", "F", "I"]
 
+[tool.ruff.lint.per-file-ignores]
+"tests/conftest.py" = ["E402"]
+
 [tool.mypy]
 python_version = "3.14"
 check_untyped_defs = true

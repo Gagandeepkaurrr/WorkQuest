@@ -1,0 +1,59 @@
+name: Verify WorkQuest
+on:
+  push:
+    paths-ignore: ["docs/**", "**/*.md"]
+  pull_request:
+    paths-ignore: ["docs/**", "**/*.md"]
+permissions:
+  contents: read
+concurrency:
+  group: workquest-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24.22.1
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+        with:
+          version: 0.13.6
+          python-version: 3.14.10
+      - run: npm install --global pnpm@11.25.0
+      - run: mkdir -p artifacts && make setup
+      - run: pnpm --filter @workquest/web exec playwright install --with-deps chromium
+      - run: make verify
+      - name: Browser journeys against PostgreSQL, Redis, Mailpit and mock worker
+        run: |
+          make dev > artifacts/dev.log 2>&1 &
+          WQ_DEV_PID=$!
+          trap 'kill "$WQ_DEV_PID" || true' EXIT
+          python3 - <<'PY'
+          import time, urllib.request
+          for attempt in range(60):
+              try:
+                  urllib.request.urlopen('http://localhost:5173',timeout=2)
+                  break
+              except OSError:
+                  time.sleep(1)
+          else:
+              raise SystemExit('Frontend did not become ready')
+          PY
+          make e2e
+          make backup-restore
+      - run: make audit
+      - run: docker compose -f compose.yaml -f compose.app.yaml build
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        if: always()
+        with:
+          name: verification-evidence
+          path: |
+            artifacts/*report.json
+            artifacts/audit-*.json
+            apps/web/playwright-report
+          retention-days: 7

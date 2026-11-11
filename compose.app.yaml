@@ -1,0 +1,42 @@
+x-app: &app
+  build: {context: ., dockerfile: apps/api/Dockerfile}
+  image: workquest-api:local
+  env_file: .env
+  environment: &environment
+    DATABASE_URL: postgresql+psycopg://workquest:${POSTGRES_PASSWORD}@db:5432/workquest
+    REDIS_URL: redis://redis:6379/0
+    APP_ORIGIN: http://localhost:8080
+    SMTP_HOST: mailpit
+    SMTP_PORT: 1025
+  depends_on:
+    db: {condition: service_healthy}
+    redis: {condition: service_healthy}
+  init: true
+  read_only: true
+  tmpfs: [/tmp]
+  security_opt: [no-new-privileges:true]
+  cap_drop: [ALL]
+services:
+  api:
+    <<: *app
+    healthcheck:
+      test: [CMD, python, -m, app.cli.healthcheck]
+      interval: 10s
+      timeout: 6s
+      retries: 10
+  worker:
+    <<: *app
+    command: [celery, -A, app.jobs.celery_app:celery, worker, --concurrency=2, --loglevel=WARNING, --without-gossip, --without-mingle]
+  dispatcher:
+    <<: *app
+    command: [python, -m, app.jobs.dispatcher]
+  web:
+    build: {context: ., dockerfile: apps/web/Dockerfile}
+    image: workquest-web:local
+    ports: ["127.0.0.1:8080:8080"]
+    depends_on:
+      api: {condition: service_healthy}
+    read_only: true
+    tmpfs: [/tmp]
+    security_opt: [no-new-privileges:true]
+    cap_drop: [ALL]

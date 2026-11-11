@@ -1,0 +1,16 @@
+{
+  "result": "PASS",
+  "origin": "http://localhost:8080",
+  "checks": [
+    "readiness PostgreSQL+Redis",
+    "SPA direct route",
+    "CSP inherited on SPA",
+    "no-store",
+    "report noindex",
+    "opaque demo session and CSRF",
+    "scenario listing",
+    "run create and owned state",
+    "metrics private API denies unauthorized; public proxy does not route metrics"
+  ],
+  "public_TLS": "NOT VERIFIED"
+}

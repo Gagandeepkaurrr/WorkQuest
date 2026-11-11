@@ -1,2 +1,23 @@
-import { Component,type ReactNode } from 'react'
-export class ErrorBoundary extends Component<{children:ReactNode},{failed:boolean}>{state={failed:false};static getDerivedStateFromError(){return {failed:true}}render(){return this.state.failed?<main className="empty"><h1>Let’s recover your workspace.</h1><p>Your saved progress is still on the server.</p><button onClick={()=>window.location.reload()}>Reload WorkQuest</button></main>:this.props.children}}
+import { Component, type ReactNode } from "react";
+export class ErrorBoundary extends Component<
+  { children: ReactNode },
+  { failed: boolean }
+> {
+  state = { failed: false };
+  static getDerivedStateFromError() {
+    return { failed: true };
+  }
+  render() {
+    return this.state.failed ? (
+      <main className="empty">
+        <h1>Let’s recover your workspace.</h1>
+        <p>Your saved progress is still on the server.</p>
+        <button onClick={() => window.location.reload()}>
+          Reload WorkQuest
+        </button>
+      </main>
+    ) : (
+      this.props.children
+    );
+  }
+}

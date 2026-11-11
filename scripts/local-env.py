@@ -18,6 +18,7 @@ REDIS_URL=redis://localhost:56379/0
 DELIVERY_PAYLOAD_ENCRYPTION_KEY={key}
 DELIVERY_KEY_VERSION=1
 SESSION_SECRET={secrets.token_urlsafe(48)}
+METRICS_TOKEN={secrets.token_urlsafe(32)}
 SMTP_HOST=localhost
 SMTP_PORT=51025
 SMTP_FROM=practice@workquest.local

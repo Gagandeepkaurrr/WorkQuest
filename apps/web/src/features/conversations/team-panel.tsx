@@ -1,15 +1,308 @@
-import { useState } from 'react'
-import { useQuery,useQueryClient } from '@tanstack/react-query'
-import { Send,Files,RefreshCw,Square,MessageCircle } from 'lucide-react'
-import { api,write } from '../../lib/api-client'
-import type { Artifact,BranchState,Event } from '../../lib/types'
-import { Button } from '../../components/ui/button'
-import { ErrorState,Loading } from '../../components/feedback/states'
-type Job={id:string;status:string;attempt_count:number;failure_code:string|null;retry_available:boolean}
-type Citation={fact_id:string;artifact_id:string|null;text:string}
-export function TeamPanel({state,onEvidence}:{state:BranchState;onEvidence:(artifact:Artifact)=>void}){const [teammate,setTeammate]=useState('maya');return <div className="stack"><div className="panel-heading"><h2>A team to think with.</h2><p>Ask a question. Inspect the evidence together. Teammates can’t run operations or reveal clues you haven’t opened.</p></div><div className="teammate-tabs" role="group" aria-label="Choose a teammate">{state.projected_state.teammates.map(t=><button key={t.id} aria-pressed={teammate===t.id} className={`glass ${teammate===t.id?'selected':''}`} onClick={()=>setTeammate(t.id)}><span className={`avatar ${t.id==='maya'?'blue':''}`}>{t.name[0]}</span><span><strong>{t.name}</strong><small>{t.role}</small></span><MessageCircle size={18}/></button>)}</div><Conversation key={`${state.branch_id}:${teammate}`} state={state} teammate={teammate} onEvidence={onEvidence}/></div>}
-function Conversation({state,teammate,onEvidence}:{state:BranchState;teammate:string;onEvidence:(artifact:Artifact)=>void}){const client=useQueryClient();const draftKey=`wq:chat:${state.branch_id}:${teammate}`;const [draft,setDraft]=useState(()=>sessionStorage.getItem(draftKey)??'');const [error,setError]=useState<unknown>();const [busy,setBusy]=useState(false);const [key,setKey]=useState(()=>crypto.randomUUID());const data=useQuery({queryKey:['conversation',state.branch_id,teammate],queryFn:()=>api<{items:Event[];jobs:Job[]}>(`/branches/${state.branch_id}/conversations/${teammate}`),refetchInterval:3000});const job=data.data?.jobs[0];const pending=job&&['queued','running'].includes(job.status)
- async function send(){setError(undefined);setBusy(true);try{await write(`/branches/${state.branch_id}/messages`,{teammate_id:teammate,text:draft},'POST',key);setDraft('');sessionStorage.removeItem(draftKey);setKey(crypto.randomUUID());await data.refetch()}catch(e){setError(e)}finally{setBusy(false)}}
- async function jobAction(id:string,action:string){setError(undefined);try{await write(`/jobs/${id}/${action}`,{},'POST',crypto.randomUUID());await data.refetch();await client.invalidateQueries({queryKey:['events',state.branch_id]})}catch(e){setError(e)}}
- return <div className="conversation-grid"><article className="glass conversation"><div className="conversation-heading"><div className="row"><span className="live-dot"/><strong>{teammate==='maya'?'Maya':'Leo'}</strong><span className="small muted">AI teammate · {state.is_demo||state.is_admin_preview?'mock practice':'configured provider'}</span></div><span className="small muted">No logical time cost</span></div><div className="messages" aria-live="polite">{data.isPending?<Loading/>:data.error?<ErrorState error={data.error}/>:data.data?.items.map(e=>{const assistant=e.type==='message.assistant';const citations=(e.payload.citations??[]) as Citation[];return <div className={`message ${assistant?'assistant':'user'}`} key={e.id}><span className="message-author">{assistant?teammate==='maya'?'Maya':'Leo':'You'}{assistant&&<span className="message-provider">{String(e.payload.provider??'authored')}</span>}</span><p>{String(assistant?e.payload.reply_text:e.payload.text)}</p>{citations.map(c=><div className="citation" key={c.fact_id}><span className="eyebrow">CANONICAL EVIDENCE</span><p>{c.text}</p>{c.artifact_id&&<button onClick={()=>{const a=state.projected_state.artifacts.find(a=>a.id===c.artifact_id);if(a)onEvidence(a)}}><Files size={13}/> View source artifact</button>}</div>)}</div>})}{pending&&<div className="job-status" role="status"><span className="status-dot"/>{job.status==='queued'?'Question saved. Waiting for a worker…':'Working with the evidence you’ve opened…'}<Button variant="ghost" size="small" onClick={()=>void jobAction(job.id,'cancel')}><Square size={12}/> Cancel</Button></div>}{job&&!['queued','running','completed'].includes(job.status)&&<div className="notice"><div><strong>{job.status==='stale'?'The simulation changed before this reply was ready.':job.status==='quota_limited'?'Conversation quota reached.':job.status==='cancelled'?'Reply cancelled.':'The teammate reply was unavailable.'}</strong><p>Continue investigating and using Actions. Your message and progress are saved.</p>{job.retry_available&&<Button variant="secondary" size="small" onClick={()=>void jobAction(job.id,'retry')}><RefreshCw size={13}/> Retry with current evidence</Button>}</div></div>}</div><form className="chat-composer" onSubmit={e=>{e.preventDefault();void send()}}><label className="sr-only" htmlFor="chat-draft">Message your teammate</label><textarea id="chat-draft" placeholder="What are you thinking? Ask your teammate…" maxLength={4000} value={draft} onChange={e=>{setDraft(e.target.value);sessionStorage.setItem(draftKey,e.target.value);setKey(crypto.randomUUID())}}/><div className="row between"><small>{draft.length}/4,000 · Draft saved in this tab</small><Button disabled={busy||Boolean(pending)||!draft.trim()||state.status!=='active'} type="submit" size="small">Send <Send size={15}/></Button></div></form>{Boolean(error)&&<ErrorState error={error}/>}</article><aside className="glass conversation-evidence"><span className="eyebrow">KEEP THE EVIDENCE CLOSE</span><h3>A useful starting point.</h3><p>Open an artifact without leaving your conversation. Your draft stays here.</p>{state.projected_state.artifacts.filter(a=>a.teammate===teammate).map(a=><button key={a.id} onClick={()=>onEvidence(a)} disabled={!a.opened&&state.status!=='active'}><Files size={17}/><span><strong>{a.title}</strong><small>{a.opened?'Reopen · free':'+1 simulated minute'}</small></span></button>)}</aside></div>
+import { useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { Send, Files, RefreshCw, Square, MessageCircle } from "lucide-react";
+import { definitiveRejection, api, write } from "../../lib/api-client";
+import type { Artifact, BranchState, Event } from "../../lib/types";
+import { Button } from "../../components/ui/button";
+import { ErrorState, Loading } from "../../components/feedback/states";
+import type { components } from "../../generated/api-types";
+type Job = components["schemas"]["JobView"];
+type Citation = { fact_id: string; artifact_id: string | null; text: string };
+export function TeamPanel({
+  state,
+  onEvidence,
+}: {
+  state: BranchState;
+  onEvidence: (artifact: Artifact) => void;
+}) {
+  const [teammate, setTeammate] = useState("maya");
+  return (
+    <div className="stack">
+      <div className="panel-heading">
+        <h2>A team to think with.</h2>
+        <p>
+          Ask a question. Inspect the evidence together. Teammates can’t run
+          operations or reveal clues you haven’t opened.
+        </p>
+      </div>
+      <div
+        className="teammate-tabs"
+        role="group"
+        aria-label="Choose a teammate"
+      >
+        {state.projected_state.teammates.map((t) => (
+          <button
+            key={t.id}
+            aria-pressed={teammate === t.id}
+            className={`glass ${teammate === t.id ? "selected" : ""}`}
+            onClick={() => setTeammate(t.id)}
+          >
+            <span className={`avatar ${t.id === "maya" ? "blue" : ""}`}>
+              {t.name[0]}
+            </span>
+            <span>
+              <strong>{t.name}</strong>
+              <small>{t.role}</small>
+            </span>
+            <MessageCircle size={18} />
+          </button>
+        ))}
+      </div>
+      <Conversation
+        key={`${state.branch_id}:${teammate}`}
+        state={state}
+        teammate={teammate}
+        onEvidence={onEvidence}
+      />
+    </div>
+  );
+}
+function Conversation({
+  state,
+  teammate,
+  onEvidence,
+}: {
+  state: BranchState;
+  teammate: string;
+  onEvidence: (artifact: Artifact) => void;
+}) {
+  const client = useQueryClient();
+  const draftKey = `wq:chat:${state.branch_id}:${teammate}`;
+  const [draft, setDraft] = useState(
+    () => sessionStorage.getItem(draftKey) ?? "",
+  );
+  const [error, setError] = useState<unknown>();
+  const [busy, setBusy] = useState(false);
+  const requestStorageKey = `${draftKey}:pending`;
+  const [pendingSend, setPendingSend] = useState<{
+    key: string;
+    text: string;
+  } | null>(
+    () =>
+      JSON.parse(sessionStorage.getItem(requestStorageKey) ?? "null") as {
+        key: string;
+        text: string;
+      } | null,
+  );
+  const data = useQuery({
+    queryKey: ["conversation", state.branch_id, teammate],
+    queryFn: () =>
+      api<{ items: Event[]; jobs: Job[] }>(
+        `/branches/${state.branch_id}/conversations/${teammate}`,
+      ),
+    refetchInterval: 3000,
+  });
+  const job = data.data?.jobs[0];
+  const pending = job && ["queued", "running"].includes(job.status);
+  async function send() {
+    setError(undefined);
+    setBusy(true);
+    const request = pendingSend ?? { key: crypto.randomUUID(), text: draft };
+    sessionStorage.setItem(requestStorageKey, JSON.stringify(request));
+    setPendingSend(request);
+    try {
+      await write(
+        `/branches/${state.branch_id}/messages`,
+        { teammate_id: teammate, text: request.text },
+        "POST",
+        request.key,
+      );
+      setDraft("");
+      sessionStorage.removeItem(draftKey);
+      sessionStorage.removeItem(requestStorageKey);
+      setPendingSend(null);
+      await data.refetch();
+    } catch (e) {
+      if (definitiveRejection(e)) {
+        sessionStorage.removeItem(requestStorageKey);
+        setPendingSend(null);
+      }
+      setError(e);
+    } finally {
+      setBusy(false);
+    }
+  }
+  async function jobAction(id: string, action: string) {
+    setError(undefined);
+    try {
+      await write(`/jobs/${id}/${action}`, {}, "POST", crypto.randomUUID());
+      await data.refetch();
+      await client.invalidateQueries({ queryKey: ["events", state.branch_id] });
+    } catch (e) {
+      setError(e);
+    }
+  }
+  return (
+    <div className="conversation-grid">
+      <article className="glass conversation">
+        <div className="conversation-heading">
+          <div className="row">
+            <span className="live-dot" />
+            <strong>{teammate === "maya" ? "Maya" : "Leo"}</strong>
+            <span className="small muted">
+              AI teammate ·{" "}
+              {state.is_demo || state.is_admin_preview
+                ? "mock practice"
+                : "configured provider"}
+            </span>
+          </div>
+          <span className="small muted">No logical time cost</span>
+        </div>
+        <div className="messages" aria-live="polite">
+          {data.isPending ? (
+            <Loading />
+          ) : data.error ? (
+            <ErrorState error={data.error} />
+          ) : (
+            data.data?.items.map((e) => {
+              const assistant = e.type === "message.assistant";
+              const citations = (e.payload.citations ?? []) as Citation[];
+              return (
+                <div
+                  className={`message ${assistant ? "assistant" : "user"}`}
+                  key={e.id}
+                >
+                  <span className="message-author">
+                    {assistant ? (teammate === "maya" ? "Maya" : "Leo") : "You"}
+                    {assistant && (
+                      <span className="message-provider">
+                        {String(e.payload.provider ?? "authored")}
+                      </span>
+                    )}
+                  </span>
+                  <p>
+                    {String(assistant ? e.payload.reply_text : e.payload.text)}
+                  </p>
+                  {citations.map((c) => (
+                    <div className="citation" key={c.fact_id}>
+                      <span className="eyebrow">CANONICAL EVIDENCE</span>
+                      <p>{c.text}</p>
+                      {c.artifact_id && (
+                        <button
+                          onClick={() => {
+                            const a = state.projected_state.artifacts.find(
+                              (a) => a.id === c.artifact_id,
+                            );
+                            if (a) onEvidence(a);
+                          }}
+                        >
+                          <Files size={13} /> View source artifact
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              );
+            })
+          )}
+          {pending && (
+            <div className="job-status" role="status">
+              <span className="status-dot" />
+              {job.status === "queued"
+                ? "Question saved. Waiting for a worker…"
+                : "Working with the evidence you’ve opened…"}
+              <Button
+                variant="ghost"
+                size="small"
+                onClick={() => void jobAction(job.id, "cancel")}
+              >
+                <Square size={12} /> Cancel
+              </Button>
+            </div>
+          )}
+          {job && !["queued", "running", "completed"].includes(job.status) && (
+            <div className="notice">
+              <div>
+                <strong>
+                  {job.status === "stale"
+                    ? "The simulation changed before this reply was ready."
+                    : job.status === "quota_limited"
+                      ? "Conversation quota reached."
+                      : job.status === "cancelled"
+                        ? "Reply cancelled."
+                        : "The teammate reply was unavailable."}
+                </strong>
+                <p>
+                  Continue investigating and using Actions. Your message and
+                  progress are saved.
+                </p>
+                {job.retry_available && (
+                  <Button
+                    variant="secondary"
+                    size="small"
+                    onClick={() => void jobAction(job.id, "retry")}
+                  >
+                    <RefreshCw size={13} /> Retry with current evidence
+                  </Button>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+        <form
+          className="chat-composer"
+          onSubmit={(e) => {
+            e.preventDefault();
+            void send();
+          }}
+        >
+          <label className="sr-only" htmlFor="chat-draft">
+            Message your teammate
+          </label>
+          <textarea
+            id="chat-draft"
+            placeholder="What are you thinking? Ask your teammate…"
+            maxLength={4000}
+            value={draft}
+            disabled={Boolean(pendingSend) || busy}
+            onChange={(e) => {
+              setDraft(e.target.value);
+              sessionStorage.setItem(draftKey, e.target.value);
+            }}
+          />
+          <div className="row between">
+            <small>{draft.length}/4,000 · Draft saved in this tab</small>
+            <Button
+              disabled={
+                busy ||
+                (Boolean(pending) && !pendingSend) ||
+                !draft.trim() ||
+                state.status !== "active"
+              }
+              type="submit"
+              size="small"
+            >
+              {pendingSend ? "Recover message" : "Send"} <Send size={15} />
+            </Button>
+          </div>
+        </form>
+        {Boolean(error) && <ErrorState error={error} />}
+      </article>
+      <aside className="glass conversation-evidence">
+        <span className="eyebrow">KEEP THE EVIDENCE CLOSE</span>
+        <h3>A useful starting point.</h3>
+        <p>
+          Open an artifact without leaving your conversation. Your draft stays
+          here.
+        </p>
+        {state.projected_state.artifacts
+          .filter((a) => a.teammate === teammate)
+          .map((a) => (
+            <button
+              key={a.id}
+              onClick={() => onEvidence(a)}
+              disabled={!a.opened && state.status !== "active"}
+            >
+              <Files size={17} />
+              <span>
+                <strong>{a.title}</strong>
+                <small>
+                  {a.opened ? "Reopen · free" : "+1 simulated minute"}
+                </small>
+              </span>
+            </button>
+          ))}
+      </aside>
+    </div>
+  );
 }

@@ -1,0 +1,14 @@
+{
+  "frontend": {
+    "exit_code": 0,
+    "report": "artifacts/audit-frontend.json"
+  },
+  "python": {
+    "exit_code": 0,
+    "report": "artifacts/audit-python.json"
+  },
+  "secret_scan": {
+    "findings": [],
+    "scope": "tracked + unignored source; known private-key/API-token patterns, not an exhaustive entropy scan"
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "date": "2026-11-12",
+  "architecture": "linux/arm64",
+  "scanner": "Docker Scout 1.27.0",
+  "scope": "runtime images; high/critical severity only",
+  "images": {
+    "api": {
+      "image_id": "sha256:a6a589d67023a39f2c726d708acf14f7b3092eda53336cff906891db313b898f",
+      "high_critical_findings": 0
+    },
+    "web": {
+      "image_id": "sha256:ba57f3696bcf4d0ccbe19b0b01ed3dbc64b24a84cfc33e0f7e61f4a02812d93c",
+      "high_critical_findings": 0
+    }
+  },
+  "note": "API multistage runtime excludes build cache/pip; frontend Debian Trixie replaces vulnerable Alpine musl. OS packages upgraded in both runtime stages. Re-scan published amd64 images before hosted deployment."
+}

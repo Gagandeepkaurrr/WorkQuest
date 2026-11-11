@@ -1,8 +1,10 @@
 from typing import Any
 from uuid import UUID
+
 from pydantic import Field
-from app.modules.auth.schemas import StrictModel
+
 from app.engine.types import VisibleWorldState
+from app.modules.auth.schemas import StrictModel
 
 
 class StartRun(StrictModel):
@@ -11,7 +13,7 @@ class StartRun(StrictModel):
 
 class WorldCommandRequest(StrictModel):
     type: str = Field(max_length=100)
-    payload: dict[str,Any] = Field(default_factory=dict)
+    payload: dict[str, Any] = Field(default_factory=dict)
     expected_state_revision: int = Field(ge=0)
 
 
@@ -32,8 +34,8 @@ class BranchState(StrictModel):
 
 class CommandResponse(BranchState):
     command_id: UUID
-    emitted_public_events: list[dict[str,Any]]
-    result: dict[str,Any]
+    emitted_public_events: list[dict[str, Any]]
+    result: dict[str, Any]
 
 
 class NoteInput(StrictModel):

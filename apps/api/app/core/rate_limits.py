@@ -1,6 +1,7 @@
 from fastapi import Request
 from redis.asyncio import Redis
 from redis.exceptions import RedisError
+
 from app.core.config import get_settings
 from app.core.errors import AppError
 from app.core.security import digest
@@ -10,12 +11,32 @@ _SCRIPT = "local n=redis.call('INCR', KEYS[1]); if n==1 then redis.call('EXPIRE'
 
 async def auth_rate_limit(request: Request):
     settings = get_settings()
-    host = request.client.host if request.client else 'unknown'
-    key = f'{settings.redis_namespace}:auth:{digest(host)}'
+    host = request.client.host if request.client else "unknown"
+    key = f"{settings.redis_namespace}:auth:{digest(host)}"
     try:
         async with Redis.from_url(settings.redis_url.get_secret_value(), socket_timeout=2) as redis:
             count = await redis.eval(_SCRIPT, 1, key, 60)
     except RedisError:
-        raise AppError('DEPENDENCY_UNAVAILABLE', 'Sign-in is temporarily unavailable. Please retry.', 503) from None
-    if count > (2000 if settings.app_env == 'test' else 30):
-        raise AppError('RATE_LIMITED','Too many requests. Try again in one minute.',429)
+        raise AppError(
+            "DEPENDENCY_UNAVAILABLE", "Sign-in is temporarily unavailable. Please retry.", 503
+        ) from None
+    if count > (2000 if settings.app_env == "test" else 30):
+        raise AppError("RATE_LIMITED", "Too many requests. Try again in one minute.", 429)
+
+
+async def user_rate_limit(user_id, method: str):
+    settings = get_settings()
+    kind = "read" if method in ("GET", "HEAD", "OPTIONS") else "write"
+    limit = 600 if kind == "read" else 120
+    key = f"{settings.redis_namespace}:user:{user_id}:{kind}"
+    try:
+        async with Redis.from_url(settings.redis_url.get_secret_value(), socket_timeout=2) as redis:
+            count = await redis.eval(_SCRIPT, 1, key, 60)
+    except RedisError:
+        raise AppError(
+            "DEPENDENCY_UNAVAILABLE",
+            "Request limiting is temporarily unavailable. Please retry.",
+            503,
+        ) from None
+    if count > limit:
+        raise AppError("RATE_LIMITED", "Please wait before making more requests.", 429)

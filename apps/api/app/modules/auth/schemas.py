@@ -1,10 +1,11 @@
 from typing import Literal
 from uuid import UUID
+
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
 
 class StrictModel(BaseModel):
-    model_config = ConfigDict(extra='forbid')
+    model_config = ConfigDict(extra="forbid")
 
 
 class Credentials(StrictModel):
@@ -48,12 +49,12 @@ class ProfileInput(StrictModel):
 
 
 class PreferencesInput(StrictModel):
-    theme: Literal['light', 'dark'] = 'light'
+    theme: Literal["light", "dark"] = "light"
     reduced_motion: bool = False
     onboarding_completed: bool = False
-    workspace_layout: Literal['standard', 'focus'] = 'standard'
+    workspace_layout: Literal["standard", "focus"] = "standard"
 
 
 class DeleteInput(StrictModel):
     password: str = Field(max_length=256)
-    confirmation: Literal['DELETE']
+    confirmation: Literal["DELETE"]

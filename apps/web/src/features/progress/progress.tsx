@@ -1,10 +1,175 @@
-import { useQuery } from '@tanstack/react-query'
-import { Link } from 'react-router'
-import { ArrowUpRight,Flag,GitBranch } from 'lucide-react'
-import { api } from '../../lib/api-client'
-import { Loading,ErrorState } from '../../components/feedback/states'
-import { Button } from '../../components/ui/button'
-type Attempt={run_id:string;branch_id:string;title:string;label:string;status:string;first_attempt:boolean;practice_mode:boolean;total_score:number|null;hints_used:number;outcome:string|null;criteria:{title:string;awarded_points:number;maximum_points:number}[]}
-type ProgressData={unique_missions_completed:number;attempts:Attempt[];missions:{scenario_id:string;title:string;first_attempt:Attempt|null;latest:Attempt|null;best:Attempt|null}[]}
-export function Progress(){const progress=useQuery({queryKey:['progress'],queryFn:()=>api<ProgressData>('/progress')});if(progress.isPending)return <Loading/>;if(progress.error||!progress.data)return <ErrorState error={progress.error}/>;const data=progress.data
-return <div><header className="page-header"><div><span className="eyebrow">A RECORD OF YOUR CURIOSITY</span><h1>Look how you’re thinking.</h1><p>Personal practice history. First attempts and repeat practice each have their place.</p></div></header><div className="progress-metrics"><article className="glass metric-card"><Flag size={23}/><strong>{data.unique_missions_completed}</strong><span>Unique missions assessed</span></article><article className="glass metric-card"><GitBranch size={23}/><strong>{data.attempts.length}</strong><span>Played approaches · forks included</span></article></div>{data.missions.length===0?<div className="empty glass"><h2>Your practice story starts here.</h2><p>Complete a mission to see your results. Guest and admin-preview runs are excluded.</p><Button asChild><Link to="/missions">Find a mission <ArrowUpRight size={16}/></Link></Button></div>:<div className="stack">{data.missions.map(m=><article className="glass content-card" key={m.scenario_id}><h3>{m.title}</h3><div className="result-summary-grid">{[['First attempt',m.first_attempt],['Latest result',m.latest],['Best practice result',m.best]].map(([name,a])=>{const attempt=a as Attempt|null;return <div key={String(name)}><span className="eyebrow">{String(name)}</span><strong>{attempt?.total_score??'—'}<small>/ 100</small></strong><p>{attempt?`${attempt.hints_used} hints · ${attempt.status}`:'No result yet'}</p></div>})}</div></article>)}</div>}<section className="attempt-history"><h2>Every approach.</h2><div className="table-scroll glass"><table><thead><tr><th>Mission / branch</th><th>Practice label</th><th>Result</th><th>Hints</th><th>Review</th></tr></thead><tbody>{data.attempts.map(a=><tr key={a.branch_id}><td><strong>{a.title}</strong><small>{a.label}</small></td><td>{a.first_attempt?'First attempt':'Repeat practice'}</td><td>{a.total_score??'In progress'}{a.total_score!==null?' / 100':''}</td><td>{a.hints_used}</td><td><Link className="text-link" to={`/runs/${a.run_id}${a.status==='finalized'?'/debrief':''}?branch=${a.branch_id}`}>Open <ArrowUpRight size={14}/></Link></td></tr>)}</tbody></table></div></section><section className="content-card"><h3>Criterion-level practice history</h3><p>Compare your own recorded results; no population percentiles or job-readiness claims.</p>{data.attempts.filter(a=>a.total_score!==null).map(a=><details key={a.branch_id}><summary>{a.title} · {a.label} · {a.first_attempt?'First attempt':'Repeat practice'}</summary>{a.criteria.map(c=><p key={c.title}>{c.title}: {c.awarded_points}/{c.maximum_points}</p>)}</details>)}</section></div>}
+import { useQuery } from "@tanstack/react-query";
+import { Link } from "react-router";
+import { ArrowUpRight, Flag, GitBranch } from "lucide-react";
+import { api } from "../../lib/api-client";
+import { Loading, ErrorState } from "../../components/feedback/states";
+import { Button } from "../../components/ui/button";
+type Attempt = {
+  run_id: string;
+  branch_id: string;
+  title: string;
+  label: string;
+  status: string;
+  first_attempt: boolean;
+  practice_mode: boolean;
+  total_score: number | null;
+  hints_used: number;
+  outcome: string | null;
+  criteria: { title: string; awarded_points: number; maximum_points: number }[];
+};
+type ProgressData = {
+  unique_missions_completed: number;
+  attempts: Attempt[];
+  missions: {
+    scenario_id: string;
+    title: string;
+    first_attempt: Attempt | null;
+    latest: Attempt | null;
+    best: Attempt | null;
+  }[];
+};
+export function Progress() {
+  const progress = useQuery({
+    queryKey: ["progress"],
+    queryFn: () => api<ProgressData>("/progress"),
+  });
+  if (progress.isPending) return <Loading />;
+  if (progress.error || !progress.data)
+    return <ErrorState error={progress.error} />;
+  const data = progress.data;
+  return (
+    <div>
+      <header className="page-header">
+        <div>
+          <span className="eyebrow">A RECORD OF YOUR CURIOSITY</span>
+          <h1>Look how you’re thinking.</h1>
+          <p>
+            Personal practice history. First attempts and repeat practice each
+            have their place.
+          </p>
+        </div>
+      </header>
+      <div className="progress-metrics">
+        <article className="glass metric-card">
+          <Flag size={23} />
+          <strong>{data.unique_missions_completed}</strong>
+          <span>Unique missions assessed</span>
+        </article>
+        <article className="glass metric-card">
+          <GitBranch size={23} />
+          <strong>{data.attempts.length}</strong>
+          <span>Played approaches · forks included</span>
+        </article>
+      </div>
+      {data.missions.length === 0 ? (
+        <div className="empty glass">
+          <h2>Your practice story starts here.</h2>
+          <p>
+            Complete a mission to see your results. Guest and admin-preview runs
+            are excluded.
+          </p>
+          <Button asChild>
+            <Link to="/missions">
+              Find a mission <ArrowUpRight size={16} />
+            </Link>
+          </Button>
+        </div>
+      ) : (
+        <div className="stack">
+          {data.missions.map((m) => (
+            <article className="glass content-card" key={m.scenario_id}>
+              <h3>{m.title}</h3>
+              <div className="result-summary-grid">
+                {[
+                  ["First attempt", m.first_attempt],
+                  ["Latest result", m.latest],
+                  ["Best practice result", m.best],
+                ].map(([name, a]) => {
+                  const attempt = a as Attempt | null;
+                  return (
+                    <div key={String(name)}>
+                      <span className="eyebrow">{String(name)}</span>
+                      <strong>
+                        {attempt?.total_score ?? "—"}
+                        <small>/ 100</small>
+                      </strong>
+                      <p>
+                        {attempt
+                          ? `${attempt.hints_used} hints · ${attempt.status}`
+                          : "No result yet"}
+                      </p>
+                    </div>
+                  );
+                })}
+              </div>
+            </article>
+          ))}
+        </div>
+      )}
+      <section className="attempt-history">
+        <h2>Every approach.</h2>
+        <div className="table-scroll glass">
+          <table>
+            <thead>
+              <tr>
+                <th>Mission / branch</th>
+                <th>Practice label</th>
+                <th>Result</th>
+                <th>Hints</th>
+                <th>Review</th>
+              </tr>
+            </thead>
+            <tbody>
+              {data.attempts.map((a) => (
+                <tr key={a.branch_id}>
+                  <td>
+                    <strong>{a.title}</strong>
+                    <small>{a.label}</small>
+                  </td>
+                  <td>
+                    {a.first_attempt ? "First attempt" : "Repeat practice"}
+                  </td>
+                  <td>
+                    {a.total_score ?? "In progress"}
+                    {a.total_score !== null ? " / 100" : ""}
+                  </td>
+                  <td>{a.hints_used}</td>
+                  <td>
+                    <Link
+                      className="text-link"
+                      to={`/runs/${a.run_id}${a.status === "finalized" ? "/debrief" : ""}?branch=${a.branch_id}`}
+                    >
+                      Open <ArrowUpRight size={14} />
+                    </Link>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+      <section className="content-card">
+        <h3>Criterion-level practice history</h3>
+        <p>
+          Compare your own recorded results; no population percentiles or
+          job-readiness claims.
+        </p>
+        {data.attempts
+          .filter((a) => a.total_score !== null)
+          .map((a) => (
+            <details key={a.branch_id}>
+              <summary>
+                {a.title} · {a.label} ·{" "}
+                {a.first_attempt ? "First attempt" : "Repeat practice"}
+              </summary>
+              {a.criteria.map((c) => (
+                <p key={c.title}>
+                  {c.title}: {c.awarded_points}/{c.maximum_points}
+                </p>
+              ))}
+            </details>
+          ))}
+      </section>
+    </div>
+  );
+}

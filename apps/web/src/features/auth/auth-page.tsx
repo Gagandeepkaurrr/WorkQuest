@@ -1,19 +1,232 @@
-import { useEffect,useState } from 'react'
-import { Link,useLocation,useNavigate,useSearchParams } from 'react-router'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
-import { ArrowRight,ArrowUpLeft,ShieldCheck } from 'lucide-react'
-import { Logo } from '../../components/layout/shell'
-import { Button } from '../../components/ui/button'
-import { ErrorState } from '../../components/feedback/states'
-import { write,bootstrapCsrf } from '../../lib/api-client'
-import { queryClient } from '../../app/providers'
-const schema=z.object({email:z.union([z.email(),z.literal('')]),password:z.union([z.string().min(12,'Use at least 12 characters.').max(256),z.literal('')]),display_name:z.string().max(80)})
-type FormData=z.infer<typeof schema>
-export function AuthPage(){const path=useLocation().pathname;const [search]=useSearchParams();const nav=useNavigate();const [error,setError]=useState<unknown>();const [message,setMessage]=useState('');const [busy,setBusy]=useState(false)
-const signup=path==='/sign-up',forgot=path==='/forgot-password',reset=path==='/reset-password',verify=path==='/verify-email';const title=signup?'Your next chapter.':forgot?'Let’s get you back in.':reset?'A fresh start.':verify?'Verify your email.':'Welcome back.'
-const {register,handleSubmit,formState:{errors}}=useForm<FormData>({resolver:zodResolver(schema),defaultValues:{email:'',password:'',display_name:''}})
-useEffect(()=>{if(verify&&search.get('token')){void write<{message:string}>('/auth/verify-email',{token:search.get('token')}).then(x=>setMessage(x.message)).catch(setError)}},[verify,search])
-async function submit(data:FormData){setError(undefined);setBusy(true);try{const endpoint=signup?'register':forgot?'forgot-password':reset?'reset-password':'login';const body=signup?data:forgot?{email:data.email}:reset?{token:search.get('token'),password:data.password}:{email:data.email,password:data.password};const result=await write<{message?:string}>(`/auth/${endpoint}`,body);if(!signup&&!forgot&&!reset){await bootstrapCsrf();await queryClient.invalidateQueries({queryKey:['session']});nav('/missions')}else setMessage(result.message??'Check your email to continue.')}catch(e){setError(e)}finally{setBusy(false)}}
-return <div className="auth-layout"><div className="auth-art pegboard"><Logo/><div><span className="eyebrow">PRACTICE MAKES PERSPECTIVE.</span><h1>Good instincts<br/>come from<br/><span className="serif-accent">doing.</span></h1><p>Make decisions. Follow the consequences.<br/>Come back a little more confident.</p></div><span className="pill"><ShieldCheck size={16}/> All operations stay inside the simulation</span></div><main id="main" className="auth-main"><Link to="/" className="text-link"><ArrowUpLeft size={16}/> Back to WorkQuest</Link><div className="auth-form glass"><span className="eyebrow">YOUR PRACTICE SPACE</span><h2>{title}</h2><p className="muted">{signup?'Create an account and learn by doing the work.':verify?'We’ll confirm your link and get you ready.':'Pick up where your curiosity left off.'}</p>{message?<div className="notice success" role="status">{message}<Link to="/sign-in">Continue to sign in <ArrowRight size={16}/></Link></div>:!verify&&<form onSubmit={e=>void handleSubmit(submit)(e)}>{signup&&<label>Your name<input autoComplete="name" required {...register('display_name')}/>{errors.display_name&&<span className="field-error">{errors.display_name.message}</span>}</label>}{!reset&&<label>Email address<input type="email" autoComplete="email" required {...register('email')}/>{errors.email&&<span className="field-error">{errors.email.message}</span>}</label>}{!forgot&&<label>{reset?'New password':'Password'}<input type="password" autoComplete={signup||reset?'new-password':'current-password'} required minLength={12} maxLength={256} {...register('password')}/><small>At least 12 characters. Passphrases welcome.</small>{errors.password&&<span className="field-error">{errors.password.message}</span>}</label>}<Button disabled={busy} type="submit">{busy?'One moment…':signup?'Create your account':forgot?'Send recovery link':reset?'Reset password':'Sign in'} <ArrowRight size={18}/></Button></form>}{Boolean(error)&&<ErrorState error={error}/>}<div className="auth-links">{!signup&&<Link to="/sign-up">New here? Create an account</Link>}{signup&&<Link to="/sign-in">Already have an account? Sign in</Link>}{!forgot&&<Link to="/forgot-password">Forgot your password?</Link>}</div></div><p className="small muted">Practice simulations. Your pace. Your decisions.</p></main></div>}
+import { useEffect, useState, useRef } from "react";
+import { Link, useLocation, useNavigate, useSearchParams } from "react-router";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { ArrowRight, ArrowUpLeft, ShieldCheck } from "lucide-react";
+import { Logo } from "../../components/layout/shell";
+import { Button } from "../../components/ui/button";
+import { ErrorState } from "../../components/feedback/states";
+import { write, bootstrapCsrf } from "../../lib/api-client";
+import { queryClient } from "../../app/providers";
+const schema = z.object({
+  email: z.union([z.email(), z.literal("")]),
+  password: z.union([
+    z.string().min(12, "Use at least 12 characters.").max(256),
+    z.literal(""),
+  ]),
+  display_name: z.string().max(80),
+});
+type FormData = z.infer<typeof schema>;
+export function AuthPage() {
+  const path = useLocation().pathname;
+  return <AuthForm key={path} />;
+}
+function AuthForm() {
+  const path = useLocation().pathname;
+  const [search] = useSearchParams();
+  const nav = useNavigate();
+  const [error, setError] = useState<unknown>();
+  const [message, setMessage] = useState("");
+  const [busy, setBusy] = useState(false);
+  const signup = path === "/sign-up",
+    forgot = path === "/forgot-password",
+    reset = path === "/reset-password",
+    verify = path === "/verify-email";
+  const title = signup
+    ? "Your next chapter."
+    : forgot
+      ? "Let’s get you back in."
+      : reset
+        ? "A fresh start."
+        : verify
+          ? "Verify your email."
+          : "Welcome back.";
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<FormData>({
+    resolver: zodResolver(schema),
+    defaultValues: { email: "", password: "", display_name: "" },
+  });
+  const verificationStarted = useRef(false);
+  useEffect(() => {
+    if (verify && search.get("token") && !verificationStarted.current) {
+      verificationStarted.current = true;
+      void write<{ message: string }>("/auth/verify-email", {
+        token: search.get("token"),
+      })
+        .then((x) => {
+          setMessage(x.message);
+          nav("/verify-email", { replace: true });
+        })
+        .catch(setError);
+    }
+  }, [verify, search, nav]);
+  async function submit(data: FormData) {
+    setError(undefined);
+    setBusy(true);
+    try {
+      const endpoint = signup
+        ? "register"
+        : forgot
+          ? "forgot-password"
+          : reset
+            ? "reset-password"
+            : "login";
+      const body = signup
+        ? data
+        : forgot
+          ? { email: data.email }
+          : reset
+            ? { token: search.get("token"), password: data.password }
+            : { email: data.email, password: data.password };
+      const result = await write<{ message?: string }>(
+        `/auth/${endpoint}`,
+        body,
+      );
+      if (!signup && !forgot && !reset) {
+        await bootstrapCsrf();
+        await queryClient.invalidateQueries({ queryKey: ["session"] });
+        nav("/missions");
+      } else setMessage(result.message ?? "Check your email to continue.");
+    } catch (e) {
+      setError(e);
+    } finally {
+      setBusy(false);
+    }
+  }
+  return (
+    <div className="auth-layout">
+      <div className="auth-art pegboard">
+        <Logo />
+        <div>
+          <span className="eyebrow">PRACTICE MAKES PERSPECTIVE.</span>
+          <h1>
+            Good instincts
+            <br />
+            come from
+            <br />
+            <span className="serif-accent">doing.</span>
+          </h1>
+          <p>
+            Make decisions. Follow the consequences.
+            <br />
+            Come back a little more confident.
+          </p>
+        </div>
+        <span className="pill">
+          <ShieldCheck size={16} /> All operations stay inside the simulation
+        </span>
+      </div>
+      <main id="main" className="auth-main">
+        <Link to="/" className="text-link">
+          <ArrowUpLeft size={16} /> Back to WorkQuest
+        </Link>
+        <div className="auth-form glass">
+          <span className="eyebrow">YOUR PRACTICE SPACE</span>
+          <h2>{title}</h2>
+          <p className="muted">
+            {signup
+              ? "Create an account and learn by doing the work."
+              : verify
+                ? "We’ll confirm your link and get you ready."
+                : "Pick up where your curiosity left off."}
+          </p>
+          {message ? (
+            <div className="notice success" role="status">
+              {message}
+              <Link to="/sign-in">
+                Continue to sign in <ArrowRight size={16} />
+              </Link>
+            </div>
+          ) : (
+            !verify && (
+              <form onSubmit={(e) => void handleSubmit(submit)(e)}>
+                {signup && (
+                  <label>
+                    Your name
+                    <input
+                      autoComplete="name"
+                      required
+                      {...register("display_name")}
+                    />
+                    {errors.display_name && (
+                      <span className="field-error">
+                        {errors.display_name.message}
+                      </span>
+                    )}
+                  </label>
+                )}
+                {!reset && (
+                  <label>
+                    Email address
+                    <input
+                      type="email"
+                      autoComplete="email"
+                      required
+                      {...register("email")}
+                    />
+                    {errors.email && (
+                      <span className="field-error">
+                        {errors.email.message}
+                      </span>
+                    )}
+                  </label>
+                )}
+                {!forgot && (
+                  <label>
+                    {reset ? "New password" : "Password"}
+                    <input
+                      type="password"
+                      aria-label={reset ? "New password" : "Password"}
+                      autoComplete={
+                        signup || reset ? "new-password" : "current-password"
+                      }
+                      required
+                      minLength={12}
+                      maxLength={256}
+                      {...register("password")}
+                    />
+                    <small>At least 12 characters. Passphrases welcome.</small>
+                    {errors.password && (
+                      <span className="field-error">
+                        {errors.password.message}
+                      </span>
+                    )}
+                  </label>
+                )}
+                <Button disabled={busy} type="submit">
+                  {busy
+                    ? "One moment…"
+                    : signup
+                      ? "Create your account"
+                      : forgot
+                        ? "Send recovery link"
+                        : reset
+                          ? "Reset password"
+                          : "Sign in"}{" "}
+                  <ArrowRight size={18} />
+                </Button>
+              </form>
+            )
+          )}
+          {Boolean(error) && <ErrorState error={error} />}
+          <div className="auth-links">
+            {!signup && <Link to="/sign-up">New here? Create an account</Link>}
+            {signup && (
+              <Link to="/sign-in">Already have an account? Sign in</Link>
+            )}
+            {!forgot && (
+              <Link to="/forgot-password">Forgot your password?</Link>
+            )}
+          </div>
+        </div>
+        <p className="small muted">
+          Practice simulations. Your pace. Your decisions.
+        </p>
+      </main>
+    </div>
+  );
+}

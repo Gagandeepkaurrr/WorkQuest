@@ -1,1 +1,37 @@
-@media print{body{background:#fff;color:#111}.sidebar,.public-header,.no-print,.button,button,.workspace-nav{display:none!important}.app-shell{display:block}.app-main{padding:0}.glass{box-shadow:none;backdrop-filter:none;border:1px solid #ddd}.print-report{max-width:none}.print-report article{break-inside:avoid}a{color:inherit}p{color:#333}}
+@media print {
+  body {
+    background: #fff;
+    color: #111;
+  }
+  .sidebar,
+  .public-header,
+  .no-print,
+  .button,
+  button,
+  .workspace-nav {
+    display: none !important;
+  }
+  .app-shell {
+    display: block;
+  }
+  .app-main {
+    padding: 0;
+  }
+  .glass {
+    box-shadow: none;
+    backdrop-filter: none;
+    border: 1px solid #ddd;
+  }
+  .print-report {
+    max-width: none;
+  }
+  .print-report article {
+    break-inside: avoid;
+  }
+  a {
+    color: inherit;
+  }
+  p {
+    color: #333;
+  }
+}

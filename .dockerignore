@@ -1,0 +1,16 @@
+.git
+.env*
+.delivery-key
+.vercel
+**/.venv
+**/node_modules
+**/dist
+**/__pycache__
+**/.pytest_cache
+**/.mypy_cache
+**/.ruff_cache
+**/test-results
+**/playwright-report
+artifacts
+.superpowers
+*.dump

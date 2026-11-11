@@ -1,0 +1,107 @@
+# Applying this Blueprint provisions paid resources. Review plans in Render first.
+# Shared secrets must be identical across API, worker, dispatcher and cleanup.
+envVarGroups:
+  - name: workquest-shared
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: APP_ORIGIN
+        sync: false
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: DELIVERY_PAYLOAD_ENCRYPTION_KEY
+        sync: false
+      - key: DELIVERY_KEY_VERSION
+        value: "1"
+      - key: METRICS_TOKEN
+        generateValue: true
+      - key: AI_PROVIDER
+        value: mock
+      - key: PUBLIC_MOCK_DEMO
+        value: "true"
+      - key: AI_MODEL
+        value: gemini-3.8-flash
+      - key: DEMO_ENABLED
+        value: "false"
+      - key: EMAIL_VERIFICATION_REQUIRED
+        value: "true"
+      - key: SMTP_HOST
+        sync: false
+      - key: SMTP_PORT
+        value: "587"
+      - key: SMTP_TLS
+        value: starttls
+      - key: SMTP_USERNAME
+        sync: false
+      - key: SMTP_PASSWORD
+        sync: false
+      - key: SMTP_FROM
+        sync: false
+services:
+  - type: web
+    name: workquest-api
+    runtime: docker
+    region: singapore
+    plan: 0.5c-512mb
+    dockerfilePath: ./apps/api/Dockerfile
+    dockerContext: .
+    preDeployCommand: alembic upgrade head && python -m app.cli.seed
+    # Set FORWARDED_ALLOW_IPS to the verified trusted proxy chain before launch.
+    # Do not use '*' or trust unvalidated client-supplied X-Forwarded-For values.
+    dockerCommand: uvicorn app.main:app --host 0.0.0.0 --port 8000 --no-access-log --proxy-headers
+    healthCheckPath: /health/ready
+    autoDeployTrigger: "off"
+    envVars: &app-env
+      - fromGroup: workquest-shared
+      - key: DATABASE_URL
+        fromDatabase: {name: workquest-db, property: connectionString}
+      - key: REDIS_URL
+        fromService: {type: keyvalue, name: workquest-queue, property: connectionString}
+      - key: REDIS_NAMESPACE
+        value: workquest-production
+      - key: FORWARDED_ALLOW_IPS
+        value: "127.0.0.1"
+  - type: worker
+    name: workquest-worker
+    runtime: docker
+    region: singapore
+    plan: 0.5c-512mb
+    dockerfilePath: ./apps/api/Dockerfile
+    dockerContext: .
+    dockerCommand: celery -A app.jobs.celery_app:celery worker --concurrency=2 --loglevel=WARNING --without-gossip --without-mingle
+    autoDeployTrigger: "off"
+    envVars: *app-env
+  - type: worker
+    name: workquest-dispatcher
+    runtime: docker
+    region: singapore
+    plan: 0.5c-512mb
+    dockerfilePath: ./apps/api/Dockerfile
+    dockerContext: .
+    dockerCommand: python -m app.jobs.dispatcher
+    autoDeployTrigger: "off"
+    envVars: *app-env
+  - type: cron
+    name: workquest-cleanup
+    runtime: docker
+    region: singapore
+    plan: 0.5c-512mb
+    schedule: "0 * * * *"
+    dockerfilePath: ./apps/api/Dockerfile
+    dockerContext: .
+    dockerCommand: python -m app.cli.cleanup
+    envVars: *app-env
+  - type: keyvalue
+    name: workquest-queue
+    region: singapore
+    plan: 256mb
+    maxmemoryPolicy: noeviction
+    ipAllowList: []
+databases:
+  - name: workquest-db
+    region: singapore
+    plan: 0.5c-1g
+    databaseName: workquest
+    user: workquest
+    postgresMajorVersion: "18"
+    ipAllowList: []

@@ -19,3 +19,5 @@ playwright-report/
 *.log
 *.tsbuildinfo
 .hypothesis/
+.vercel/
+.delivery-key

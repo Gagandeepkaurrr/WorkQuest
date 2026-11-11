@@ -1,0 +1,34 @@
+{
+  "host": "macOS-26.6-arm64-arm-64bit-Mach-O",
+  "processor": "Apple M5",
+  "memory_bytes": "17179869184",
+  "learners": 20,
+  "requested_seconds": 300,
+  "elapsed_seconds": 301.41,
+  "ordinary_workload": "alternating state reads and costed flag commands, one request/second/learner; new run after logical cap",
+  "ai": "one mock dialogue per learner; live model excluded",
+  "dataset": {
+    "users": 20,
+    "runs": 160,
+    "branches": 160,
+    "branch_events": 3582,
+    "scorecards": 140,
+    "ai_jobs": 20
+  },
+  "requests": 6045,
+  "unexpected_errors": [],
+  "reads": {
+    "count": 2903,
+    "p50_ms": 14.1,
+    "p95_ms": 28.34,
+    "max_ms": 74.28
+  },
+  "commands": {
+    "count": 2902,
+    "p50_ms": 44.74,
+    "p95_ms": 91.14,
+    "max_ms": 387.87
+  },
+  "concurrent_work": "local browser/build/verification tasks may run on same host",
+  "targets_met": true
+}

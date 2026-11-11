@@ -45,51 +45,53 @@ Types live in app/engine/types.py and feature schemas. JSON uses snake_case; UUI
 
 ### Task 1: Foundation and secure accounts
 Files: root manifests/Compose, app/core, app/db, modules/auth, modules/users, migrations, web shell/auth.
-- [ ] Write account/config integration tests: registration, single-use verification, session rotation, reset revocation, CSRF/origin and ownership boundaries; observe failure.
-- [ ] Implement typed settings, Argon2, opaque cookies, encrypted email delivery, session/preferences/deletion endpoints, migration and local services.
-- [ ] Implement forms, route protection and functional white/glass shell.
-- [ ] Run `uv run pytest tests/integration/test_auth.py tests/unit/test_config.py`; migrate empty PostgreSQL; build frontend. Commit and record results.
+- [x] Write account/config integration tests: registration, single-use verification, session rotation, reset revocation, CSRF/origin and ownership boundaries; observe failure.
+- [x] Implement typed settings, Argon2, opaque cookies, encrypted email delivery, session/preferences/deletion endpoints, migration and local services.
+- [x] Implement forms, route protection and functional white/glass shell.
+- [x] Run `uv run pytest tests/integration/test_auth.py tests/unit/test_config.py`; migrate empty PostgreSQL; build frontend. Commit and record results.
 
 ### Task 2: First deterministic mission
 Files: engine/{types,commands,transitions,visibility,scoring,replay,registry}.py, mechanics/checkout_v1.py, private checkout content.
-- [ ] Write exact reference/negative/clock/property tests, observe failure.
-- [ ] Implement checkout transitions, safe projections, 100-point scoring, fingerprints and pure replay.
-- [ ] Verify `uv run pytest tests/unit/test_checkout.py` with no external services. Expected reference t=10, failed_purchases=30, score=100. Commit and record results.
+- [x] Write exact reference/negative/clock/property tests, observe failure.
+- [x] Implement checkout transitions, safe projections, 100-point scoring, fingerprints and pure replay.
+- [x] Verify `uv run pytest tests/unit/test_checkout.py` with no external services. Expected reference t=10, failed_purchases=30, score=100. Commit and record results.
 
 ### Task 3: Persisted playable workspace
 Files: modules/scenarios, modules/runs, frontend missions/workspace/evidence/actions/timeline.
-- [ ] Test duplicate keys, revision races, rollback, hidden evidence and cross-user access on PostgreSQL.
-- [ ] Implement run/start/state, command transaction, artifact reads, structured decisions, notes, lifecycle and finalization.
-- [ ] Build all seven workspace panels, action review and timeout-safe client mutations.
-- [ ] Verify `uv run pytest tests/integration/test_runs.py` and browser checkout completion/reload. Commit and record.
+- [x] Test duplicate keys, revision races, rollback, hidden evidence and cross-user access on PostgreSQL.
+- [x] Implement run/start/state, command transaction, artifact reads, structured decisions, notes, lifecycle and finalization.
+- [x] Build all seven workspace panels, action review and timeout-safe client mutations.
+- [x] Verify `uv run pytest tests/integration/test_runs.py` and browser checkout completion/reload. Commit and record.
 
 ### Task 4: Teammates and durable work
 Files: ai/, jobs/, modules/conversations, SSE/client transport.
-- [ ] Write context/validation and job lease/quota/cancellation/stale/recovery tests first.
-- [ ] Implement mock/Gemini contract, authorized context, encrypted email jobs, DB dispatcher, fenced claims and counted attempts.
-- [ ] Implement queued/working/failed/stale/cancel/retry UI, persistent chat drafts, resumable branch-bound event cursors.
-- [ ] Run `uv run pytest tests/unit/test_ai.py tests/integration/test_jobs.py`; bounded worker/broker fault checks. Commit and record.
+- [x] Write context/validation and job lease/quota/cancellation/stale/recovery tests first.
+- [x] Implement mock/Gemini contract, authorized context, encrypted email jobs, DB dispatcher, fenced claims and counted attempts.
+- [x] Implement queued/working/failed/stale/cancel/retry UI, persistent chat drafts, resumable branch-bound event cursors.
+- [x] Run `uv run pytest tests/unit/test_ai.py tests/integration/test_jobs.py`; bounded worker/broker fault checks. Commit and record.
 
 ### Task 5: Branches, debrief, progress and sharing
 Files: modules/checkpoints, modules/reports, progress/branches/debrief/report UI.
-- [ ] Test baseline/future-context separation, note independence, replay/hash, first root, sanitized secret sharing and expiry/revocation.
-- [ ] Implement start/manual/automatic checkpoints, forks, replay, comparison, deterministic result, optional coaching, progress and exports.
-- [ ] Run `uv run pytest tests/integration/test_branches.py`; browser fork/compare/share/revoke. Commit and record.
+- [x] Test baseline/future-context separation, note independence, replay/hash, first root, sanitized secret sharing and expiry/revocation.
+- [x] Implement start/manual/automatic checkpoints, forks, replay, comparison, deterministic result, optional coaching, progress and exports.
+- [x] Run `uv run pytest tests/integration/test_branches.py`; browser fork/compare/share/revoke. Commit and record.
 
 ### Task 6: Remaining missions and administration
 Files: inventory_v1.py, analytics_v1.py, private content, modules/admin and editor UI.
-- [ ] Write exact vectors: inventory t=11/no new oversells, analytics t=10/90 orders/$9000; stated negative paths fail for stated reasons.
-- [ ] Implement both mechanics and complete evidence, immutable draft-preview snapshots, hash-bound validation, publication/archive, import/export.
-- [ ] Run engine/scenario/admin tests; complete both in browser. Commit and record.
+- [x] Write exact vectors: inventory t=11/no new oversells, analytics t=10/90 orders/$9000; stated negative paths fail for stated reasons.
+- [x] Implement both mechanics and complete evidence, immutable draft-preview snapshots, hash-bound validation, publication/archive, import/export.
+- [x] Run engine/scenario/admin tests; complete both in browser. Commit and record.
 
 ### Task 7: Product and operations
 Files: styles/UI, infra/, scripts/, docs/, CI.
-- [ ] Run desktop/mobile/keyboard/axe checks and correct observed problems.
-- [ ] Add restricted metrics, logs/redaction, cleanup, non-root images, backup/restore rehearsal, modest load script and deployment runbooks.
-- [ ] Run frontend/backend lint/types, builds, backup/restore, secret/dependency scans and bounded performance test; record measurements and exclusions.
+- [x] Run desktop/mobile/keyboard/axe checks and correct observed problems.
+- [x] Add restricted metrics, logs/redaction, cleanup, non-root images, backup/restore rehearsal, modest load script and deployment runbooks.
+- [x] Run frontend/backend lint/types, builds, backup/restore, secret/dependency scans and bounded performance test; record measurements and exclusions.
 
 ### Task 8: Release review
-- [ ] Export OpenAPI/scenario schema and generate TypeScript; fail drift.
-- [ ] Run `make verify` and `make e2e` against disposable PostgreSQL/Redis; review all T01–T25 evidence.
-- [ ] Obtain independent final code review, resolve substantive findings and rerun affected checks.
-- [ ] Complete requirements matrix, release gates, limitations and exact setup/admin/provider instructions. Live integrations/TLS/deployment stay NOT VERIFIED without credentials and authorization.
+- [x] Export OpenAPI/scenario schema and generate TypeScript; fail drift.
+- [x] Run `make verify` and `make e2e` against disposable PostgreSQL/Redis; review all T01–T25 evidence.
+- [x] Obtain independent final code review, resolve substantive findings and rerun affected checks.
+- [x] Complete requirements matrix, release gates, limitations and exact setup/admin/provider instructions. Live integrations/TLS/deployment stay NOT VERIFIED without credentials and authorization.
+
+Execution note: implementation and local acceptance completed in the requested order, with commits grouped across milestones. Final hosted deployment gates are explicitly NOT VERIFIED in RELEASE_CHECKLIST.md; implementation completion does not mark those gates passed.

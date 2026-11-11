@@ -5,3 +5,8 @@
 - User visual steering supersedes the dark-default requirement: white glass surfaces, cobalt/mint accents, bold bundled sans-serif, pegboard mission presentation; retain a functional alternate dark theme.
 - Keep private content and deterministic mechanics entirely on the backend. JSONB carries typed domain state; relational ownership, constraints and locks protect transactions.
 - Native implementation with one independent final review avoids simultaneous schema ownership. Build checkout end-to-end before implementing the other mechanics.
+- 2026-11-12: Git destination was explicitly clarified as `Gagandeepkaurrr/WorkQuest only`; never publish to portfolio_.
+- Keep the Render/Vercel hosted proxy trust check as a visible release gate. Avoid blanket trust of client-supplied forwarding headers; single-origin Compose pins both proxy hops.
+- Retry recovery retains original idempotency keys after authentication/rate-limit failures because these can occur before the server retrieves a previously committed response.
+- Password reset, login and password change serialize on the account row; token consumption locks owner before token to prevent reset interleavings/deadlocks.
+- Frontend Nginx runtime uses patched Debian Trixie rather than Alpine after a high-severity musl finding; scan the final runtime again and record its digest.

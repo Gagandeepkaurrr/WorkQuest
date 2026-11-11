@@ -1,7 +1,168 @@
-import { useState } from 'react'
-import { CheckCircle2,Circle,ArrowRight } from 'lucide-react'
-import type { WorldState } from '../../lib/types'
-import { label } from '../../lib/types'
-import { Button } from '../../components/ui/button'
-export function TasksPanel({world,execute,disabled}:{world:WorldState;execute:(type:string,payload?:Record<string,unknown>)=>Promise<unknown>;disabled:boolean}){const [cause,setCause]=useState(world.diagnosis??'');const [next,setNext]=useState('');const [impact,setImpact]=useState(String(world.communication.impact));const [status,setStatus]=useState(world.communication.status);const [recap,setRecap]=useState(world.communication.outcome)
-return <div className="stack"><div className="panel-heading"><h2>Think clearly. Leave a trail.</h2><p>Objectives come from the simulation. Your structured decisions connect the evidence to your next move.</p></div><div className="glass content-card"><h3>Investigation checklist</h3><ul className="objective-list">{world.tasks.map(t=><li key={t.id}>{t.completed?<CheckCircle2 size={18} className="good"/>:<Circle size={18}/>}<span>{t.label}</span><small>{t.completed?'Complete':'Not yet'}</small></li>)}</ul></div><div className="decision-grid"><form className="glass content-card" onSubmit={e=>{e.preventDefault();void execute('mission.diagnose',{cause_id:cause})}}><span className="eyebrow">YOUR WORKING HYPOTHESIS</span><h3>What caused this?</h3><label>Diagnosis<select required value={cause} onChange={e=>setCause(e.target.value)}><option value="">Choose a plausible cause</option>{world.diagnosis_choices.map(c=><option key={c.id} value={c.id}>{c.label}</option>)}</select></label><p className="small">Required evidence must be investigated. Selecting an answer alone does not demonstrate the diagnosis.</p><Button disabled={disabled||!cause} variant="secondary">Record hypothesis <ArrowRight size={16}/></Button></form><form className="glass content-card" onSubmit={e=>{e.preventDefault();void execute('mission.update',{impact:Number(impact),status,next_action_id:next})}}><span className="eyebrow">KEEP THE TEAM INFORMED</span><h3>Post a status update.</h3><label>Current impact (as shown in Service)<input type="number" required value={impact} onChange={e=>setImpact(e.target.value)}/></label><label>Current status<select value={status} onChange={e=>setStatus(e.target.value)}>{['impacted','contained','repaired','incorrect','corrected','verified'].map(s=><option key={s}>{s}</option>)}</select></label><label>Next step<select required value={next} onChange={e=>setNext(e.target.value)}><option value="">Choose an available next step</option>{world.communication.next_actions.map(a=><option key={a} value={a}>{label(a)}</option>)}</select></label><Button disabled={disabled||!next} variant="secondary">Send structured update</Button></form></div><form className="glass content-card" onSubmit={e=>{e.preventDefault();void execute('mission.recap',{cause_id:world.diagnosis,outcome:recap})}}><span className="eyebrow">BEFORE YOU FINISH</span><h3>Close the loop.</h3><p>Your final recap uses the recorded diagnosis and the outcome you select. It is assessed against the final simulation state.</p><label>Outcome<select value={recap} onChange={e=>setRecap(e.target.value)}><option value="unresolved">Unresolved</option><option value="contained">Contained</option><option value="successful">Successful</option></select></label><Button disabled={disabled||!world.diagnosis} variant="secondary">Record final recap</Button></form></div>}
+import { useState } from "react";
+import { CheckCircle2, Circle, ArrowRight } from "lucide-react";
+import type { WorldState } from "../../lib/types";
+import { label } from "../../lib/types";
+import { Button } from "../../components/ui/button";
+export function TasksPanel({
+  world,
+  execute,
+  disabled,
+}: {
+  world: WorldState;
+  execute: (
+    type: string,
+    payload?: Record<string, unknown>,
+  ) => Promise<unknown>;
+  disabled: boolean;
+}) {
+  const [cause, setCause] = useState(world.diagnosis ?? "");
+  const [next, setNext] = useState("");
+  const [impact, setImpact] = useState(String(world.communication.impact));
+  const [status, setStatus] = useState(world.communication.status);
+  const [recap, setRecap] = useState(world.communication.outcome);
+  return (
+    <div className="stack">
+      <div className="panel-heading">
+        <h2>Think clearly. Leave a trail.</h2>
+        <p>
+          Objectives come from the simulation. Your structured decisions connect
+          the evidence to your next move.
+        </p>
+      </div>
+      <div className="glass content-card">
+        <h3>Investigation checklist</h3>
+        <ul className="objective-list">
+          {world.tasks.map((t) => (
+            <li key={t.id}>
+              {t.completed ? (
+                <CheckCircle2 size={18} className="good" />
+              ) : (
+                <Circle size={18} />
+              )}
+              <span>{t.label}</span>
+              <small>{t.completed ? "Complete" : "Not yet"}</small>
+            </li>
+          ))}
+        </ul>
+      </div>
+      <div className="decision-grid">
+        <form
+          className="glass content-card"
+          onSubmit={(e) => {
+            e.preventDefault();
+            void execute("mission.diagnose", { cause_id: cause });
+          }}
+        >
+          <span className="eyebrow">YOUR WORKING HYPOTHESIS</span>
+          <h3>What caused this?</h3>
+          <label>
+            Diagnosis
+            <select
+              required
+              value={cause}
+              onChange={(e) => setCause(e.target.value)}
+            >
+              <option value="">Choose a plausible cause</option>
+              {world.diagnosis_choices.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.label}
+                </option>
+              ))}
+            </select>
+          </label>
+          <p className="small">
+            Required evidence must be investigated. Selecting an answer alone
+            does not demonstrate the diagnosis.
+          </p>
+          <Button disabled={disabled || !cause} variant="secondary">
+            Record hypothesis <ArrowRight size={16} />
+          </Button>
+        </form>
+        <form
+          className="glass content-card"
+          onSubmit={(e) => {
+            e.preventDefault();
+            void execute("mission.update", {
+              impact: Number(impact),
+              status,
+              next_action_id: next,
+            });
+          }}
+        >
+          <span className="eyebrow">KEEP THE TEAM INFORMED</span>
+          <h3>Post a status update.</h3>
+          <label>
+            Current impact (as shown in Service)
+            <input
+              type="number"
+              required
+              value={impact}
+              onChange={(e) => setImpact(e.target.value)}
+            />
+          </label>
+          <label>
+            Current status
+            <select value={status} onChange={(e) => setStatus(e.target.value)}>
+              {[
+                "impacted",
+                "contained",
+                "repaired",
+                "incorrect",
+                "corrected",
+                "verified",
+              ].map((s) => (
+                <option key={s}>{s}</option>
+              ))}
+            </select>
+          </label>
+          <label>
+            Next step
+            <select
+              required
+              value={next}
+              onChange={(e) => setNext(e.target.value)}
+            >
+              <option value="">Choose an available next step</option>
+              {world.communication.next_actions.map((a) => (
+                <option key={a} value={a}>
+                  {label(a)}
+                </option>
+              ))}
+            </select>
+          </label>
+          <Button disabled={disabled || !next} variant="secondary">
+            Send structured update
+          </Button>
+        </form>
+      </div>
+      <form
+        className="glass content-card"
+        onSubmit={(e) => {
+          e.preventDefault();
+          void execute("mission.recap", {
+            cause_id: world.diagnosis,
+            outcome: recap,
+          });
+        }}
+      >
+        <span className="eyebrow">BEFORE YOU FINISH</span>
+        <h3>Close the loop.</h3>
+        <p>
+          Your final recap uses the recorded diagnosis and the outcome you
+          select. It is assessed against the final simulation state.
+        </p>
+        <label>
+          Outcome
+          <select value={recap} onChange={(e) => setRecap(e.target.value)}>
+            <option value="unresolved">Unresolved</option>
+            <option value="contained">Contained</option>
+            <option value="successful">Successful</option>
+          </select>
+        </label>
+        <Button disabled={disabled || !world.diagnosis} variant="secondary">
+          Record final recap
+        </Button>
+      </form>
+    </div>
+  );
+}
