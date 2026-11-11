@@ -28,6 +28,8 @@ Updated: 2026-11-12, Asia/Kolkata. Repository: `/Users/gaggu/WorkQuest`. Authori
 - Production API/web images built locally. Latest API and frontend high/critical Docker Scout scans: zero on local arm64 images. Final non-root/read-only container smoke passed: readiness, SPA/API/auth/run, inherited CSP, no-store, report noindex, restricted metrics. Scans are time-, architecture- and severity-specific, not a guarantee of no vulnerabilities.
 - Render file passes the official published JSON schema locally. Manual secret prompts are API-scoped and referenced by workers; signup is closed by default. Actual `render blueprints validate` in an account, paid provisioning and Vercel build/deploy are not performed.
 
+- GitHub Actions: PASS on `ea2c74c` — clean Ubuntu setup, complete verification/browser/restore/audit and amd64 container builds. [Run](https://github.com/Gagandeepkaurrr/WorkQuest/actions/runs/43085445643). This is CI, not a hosted application deployment.
+
 ## Independent review and corrections
 
 A fresh-context reviewer inspected the complete working tree. Corrected: reset/login race via owner-first locks; uncertain writes retain idempotency keys after 401/403/429; library provides archive controls and pagination for learner/demo/preview runs; workspace explains skipped automatic checkpoints; uncertain shares retain the previously approved alias/expiry. Targeted auth/config/release-boundary tests: 17 passed. Hosted proxy identity was retained as an explicit launch blocker, not hidden by wildcard proxy trust.
@@ -39,6 +41,5 @@ A fresh-context reviewer inspected the complete working tree. Corrected: reset/l
 - Render/Vercel: no account provisioning, hosted build, TLS/secure-cookie/streaming/cache/log-redaction smoke test or real capacity measurement.
 - Trusted proxy identity: Render/Vercel forwarded client-IP chain must be verified/configured before multi-user signup. Default conservative trust can group clients under ingress authentication limits. Single-origin Compose has an exact configured trust chain; its public deployment is also unverified.
 - Offsite encrypted backups, alert delivery, measured production RPO24h/RTO4h: not configured or rehearsed.
-- GitHub Actions: PASS on `ea2c74c` — clean Ubuntu setup, complete verification/browser/restore/audit and amd64 container builds. [Run](https://github.com/Gagandeepkaurrr/WorkQuest/actions/runs/43085445643). This is CI, not a hosted application deployment.
 
 Handoff complete: code and deployment configuration are pushed to `main`; working tree is clean after the documentation handoff commit. Next deployment action: create the Render Blueprint and Vercel project using the guide, supply secrets/domains, resolve proxy identity and execute the hosted release gates. See [deployment commands](DEPLOY_RENDER_VERCEL.md), [operations](OPERATIONS.md), [limitations](KNOWN_LIMITATIONS.md), and [acceptance mapping](REQUIREMENTS_MATRIX.md).
