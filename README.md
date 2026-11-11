@@ -4,6 +4,8 @@ A workplace practice app: investigate an incident, talk with a simulated team, m
 
 React + TypeScript + Vite · FastAPI + SQLAlchemy · PostgreSQL 18 · Redis + Celery. The deterministic engine owns state, logical time, verification and scores. AI provides bounded conversation and optional coaching; it cannot execute actions or assign points.
 
+![WorkQuest white glass interface with a pegboard mission preview](docs/screenshots/landing.png)
+
 ## Run locally
 
 Prerequisites: Docker Desktop/Engine with Compose, Node **24.22.1**, pnpm **11.25.0**, Python **3.14.10**, and uv **0.13.6**. uv can install the pinned Python automatically. Start Docker first.

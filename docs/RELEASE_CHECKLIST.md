@@ -21,7 +21,7 @@ Updated 2026-11-12. PASS means an executed local check; NOT VERIFIED is an expli
 | 20 learners / five minutes | PASS locally | 6,045 requests, 0 errors, p95 read28.34ms/command91.14ms; mock AI; Apple M5/16GB |
 | Independent final code review | PASS with findings addressed/gated | Auth serialization, retry keys, archive control, checkpoint notice fixed; hosted proxy trust remains explicit gate |
 | Render/Vercel configuration schema | PASS locally | Official published JSON schemas; account-level Blueprint validation not run |
-| GitHub Actions | NOT VERIFIED yet | Workflow supplied; inspect actual run after first push |
+| GitHub Actions | PASS | Clean Ubuntu runner, commit ea2c74c; [workflow run](https://github.com/Gagandeepkaurrr/WorkQuest/actions/runs/43085445643); setup/verify/browser/restore/audit/amd64 image builds all succeeded |
 | Live Gemini | NOT VERIFIED | Need credentials/model access, authorized billable probe, real-model adversarial/latency evaluation |
 | External SMTP | NOT VERIFIED | Need real sender credentials/DNS/TLS/delivery; only Mailpit verified |
 | Public TLS/cookies/SSE/cache/log redaction | NOT VERIFIED | Need actual public domains and hosted browser smoke flow |
