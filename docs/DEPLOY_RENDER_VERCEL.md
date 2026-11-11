@@ -27,7 +27,7 @@ The CLI validation requires your Render workspace. It has **not** been run again
 
 In the [Render dashboard](https://dashboard.render.com/), choose **New → Blueprint**, connect **Gagandeepkaurrr/WorkQuest**, select `main` and `render.yaml`, review the proposed services, and apply. Initial Blueprint creation is a dashboard step; there is no fabricated one-command deploy in this guide.
 
-Supply the prompted settings in the shared `workquest-shared` environment group:
+Supply the prompted settings on **workquest-api** during Blueprint creation. Worker, dispatcher and cleanup reference those exact API values; generated session/metrics secrets and common settings live in `workquest-shared`. Render does not support `sync: false` inside environment groups, so manual prompts are deliberately service-scoped:
 
 | Setting | Value |
 |---|---|
@@ -46,7 +46,7 @@ uv run --project apps/api python -c 'from cryptography.fernet import Fernet; pri
 
 Do not commit `.delivery-key`, environment files or credentials. Prefer your password manager's private scratch area; `.delivery-key` is ignored by this repository. PostgreSQL and Redis URLs are injected from Render resources. Standard `postgresql://` URLs are normalized to psycopg by the backend. `RENDER_EXTERNAL_HOSTNAME` is recognized automatically as an exact allowed backend host.
 
-The Blueprint deliberately enables a visibly labelled public **mock AI** mode (`AI_PROVIDER=mock`, `PUBLIC_MOCK_DEMO=true`) and disables guest accounts in production. For real AI, set `AI_PROVIDER=gemini`, an available `AI_MODEL`, and `GEMINI_API_KEY` in the shared group, then restart API, worker and dispatcher. Keep credentials out of Vercel/frontend environment variables.
+The Blueprint deliberately enables a visibly labelled public **mock AI** mode (`AI_PROVIDER=mock`, `PUBLIC_MOCK_DEMO=true`) and disables guest accounts in production. For real AI, set `AI_PROVIDER=gemini`, an available `AI_MODEL`, and `GEMINI_API_KEY` on all backend services (or in their shared environment group), then restart API, worker and dispatcher. Keep credentials out of Vercel/frontend environment variables.
 
 The API pre-deploy command runs migrations and an idempotent seed. Take a backup before later migrations. Existing administrator-published scenario versions remain selected when seeding again.
 
@@ -92,7 +92,7 @@ curl --fail https://YOUR-API.onrender.com/health/ready
 curl --fail --head https://YOUR-FRONTEND.vercel.app/
 ```
 
-Then use the public browser UI to sign up, receive a real verification email, log in, finish a mission, receive a teammate reply, reload, fork, create/revoke a report, reset the password, and sign out. Inspect `__Host-wq_session` for Secure/HttpOnly/SameSite=Lax/Path=/ with no Domain attribute. Verify CSRF rejects another origin, SSE reconnects through Vercel, API/report responses are never cached, and secret URLs are excluded/redacted in provider logs. Test proxy identity as above, worker/dispatcher recovery, and an encrypted offsite restore. Keep public signup closed (`PUBLIC_SIGNUP_ENABLED=false`) until these gates pass.
+In a controlled staging/test window, temporarily enable signup for the verification flow, then close it again until all gates pass. Use the hosted browser UI to sign up, receive a real verification email, log in, finish a mission, receive a teammate reply, reload, fork, create/revoke a report, reset the password, and sign out. Inspect `__Host-wq_session` for Secure/HttpOnly/SameSite=Lax/Path=/ with no Domain attribute. Verify CSRF rejects another origin, SSE reconnects through Vercel, API/report responses are never cached, and secret URLs are excluded/redacted in provider logs. Test proxy identity as above, worker/dispatcher recovery, and an encrypted offsite restore. The Blueprint keeps public signup closed (`PUBLIC_SIGNUP_ENABLED=false`) by default. After these gates pass, change it to `true` in the shared group and the Blueprint, then deploy consistently.
 
 A Vercel deployment is not a database rollback. Redeploy a previous application commit only when it is compatible with the current database schema; see [operations](OPERATIONS.md). Hosted streaming duration, SMTP delivery, Gemini evaluation, custom domain/TLS, billing limits, backup RPO/RTO and this entire hosted smoke flow remain **NOT VERIFIED**.
 

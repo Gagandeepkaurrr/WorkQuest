@@ -5,17 +5,35 @@
   "installCommand": "pnpm install --frozen-lockfile",
   "outputDirectory": "apps/web/dist",
   "rewrites": [
-    {"source": "/api/:path*", "destination": "https://REPLACE-WITH-YOUR-WORKQUEST-API.onrender.com/api/:path*"},
-    {"source": "/(.*)", "destination": "/index.html"}
+    {
+      "source": "/api/:path*",
+      "destination": "https://REPLACE-WITH-YOUR-WORKQUEST-API.onrender.com/api/:path*"
+    },
+    { "source": "/(.*)", "destination": "/index.html" }
   ],
   "headers": [
-    {"source": "/(.*)", "headers": [
-      {"key": "X-Content-Type-Options", "value": "nosniff"},
-      {"key": "Referrer-Policy", "value": "no-referrer"},
-      {"key": "X-Frame-Options", "value": "DENY"},
-      {"key": "Content-Security-Policy", "value": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; frame-ancestors 'none'; object-src 'none'; base-uri 'self'; form-action 'self'"}
-    ]},
-    {"source": "/api/:path*", "headers": [{"key": "Cache-Control", "value": "no-store"}]},
-    {"source": "/reports/:path*", "headers": [{"key": "Cache-Control", "value": "no-store"},{"key":"X-Robots-Tag","value":"noindex, nofollow"}]}
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "Referrer-Policy", "value": "no-referrer" },
+        { "key": "X-Frame-Options", "value": "DENY" },
+        {
+          "key": "Content-Security-Policy",
+          "value": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; frame-ancestors 'none'; object-src 'none'; base-uri 'self'; form-action 'self'"
+        }
+      ]
+    },
+    {
+      "source": "/api/:path*",
+      "headers": [{ "key": "Cache-Control", "value": "no-store" }]
+    },
+    {
+      "source": "/reports/:path*",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-store" },
+        { "key": "X-Robots-Tag", "value": "noindex, nofollow" }
+      ]
+    }
   ]
 }

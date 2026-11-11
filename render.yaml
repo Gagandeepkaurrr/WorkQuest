@@ -1,16 +1,12 @@
-# Applying this Blueprint provisions paid resources. Review plans in Render first.
-# Shared secrets must be identical across API, worker, dispatcher and cleanup.
+# Paid Render services. Manual secrets are prompted on API once and referenced by workers.
+# Keep signup closed until hosted gates pass. Set verified FORWARDED_ALLOW_IPS before launch.
 envVarGroups:
   - name: workquest-shared
     envVars:
       - key: APP_ENV
         value: production
-      - key: APP_ORIGIN
-        sync: false
       - key: SESSION_SECRET
         generateValue: true
-      - key: DELIVERY_PAYLOAD_ENCRYPTION_KEY
-        sync: false
       - key: DELIVERY_KEY_VERSION
         value: "1"
       - key: METRICS_TOKEN
@@ -25,18 +21,12 @@ envVarGroups:
         value: "false"
       - key: EMAIL_VERIFICATION_REQUIRED
         value: "true"
-      - key: SMTP_HOST
-        sync: false
       - key: SMTP_PORT
         value: "587"
       - key: SMTP_TLS
         value: starttls
-      - key: SMTP_USERNAME
-        sync: false
-      - key: SMTP_PASSWORD
-        sync: false
-      - key: SMTP_FROM
-        sync: false
+      - key: PUBLIC_SIGNUP_ENABLED
+        value: "false"
 services:
   - type: web
     name: workquest-api
@@ -46,21 +36,41 @@ services:
     dockerfilePath: ./apps/api/Dockerfile
     dockerContext: .
     preDeployCommand: alembic upgrade head && python -m app.cli.seed
-    # Set FORWARDED_ALLOW_IPS to the verified trusted proxy chain before launch.
-    # Do not use '*' or trust unvalidated client-supplied X-Forwarded-For values.
     dockerCommand: uvicorn app.main:app --host 0.0.0.0 --port 8000 --no-access-log --proxy-headers
     healthCheckPath: /health/ready
     autoDeployTrigger: "off"
-    envVars: &app-env
-      - fromGroup: workquest-shared
-      - key: DATABASE_URL
-        fromDatabase: {name: workquest-db, property: connectionString}
-      - key: REDIS_URL
-        fromService: {type: keyvalue, name: workquest-queue, property: connectionString}
-      - key: REDIS_NAMESPACE
+    envVars:
+      - &shared_settings
+        fromGroup: workquest-shared
+      - &database
+        key: DATABASE_URL
+        fromDatabase:
+          name: workquest-db
+          property: connectionString
+      - &queue
+        key: REDIS_URL
+        fromService:
+          type: keyvalue
+          name: workquest-queue
+          property: connectionString
+      - &namespace
+        key: REDIS_NAMESPACE
         value: workquest-production
-      - key: FORWARDED_ALLOW_IPS
-        value: "127.0.0.1"
+      - &proxy_trust
+        key: FORWARDED_ALLOW_IPS
+        value: 127.0.0.1
+      - key: APP_ORIGIN
+        sync: false
+      - key: DELIVERY_PAYLOAD_ENCRYPTION_KEY
+        sync: false
+      - key: SMTP_HOST
+        sync: false
+      - key: SMTP_USERNAME
+        sync: false
+      - key: SMTP_PASSWORD
+        sync: false
+      - key: SMTP_FROM
+        sync: false
   - type: worker
     name: workquest-worker
     runtime: docker
@@ -68,9 +78,46 @@ services:
     plan: 0.5c-512mb
     dockerfilePath: ./apps/api/Dockerfile
     dockerContext: .
-    dockerCommand: celery -A app.jobs.celery_app:celery worker --concurrency=2 --loglevel=WARNING --without-gossip --without-mingle
+    dockerCommand:
+      celery -A app.jobs.celery_app:celery worker --concurrency=2 --loglevel=WARNING
+      --without-gossip --without-mingle
     autoDeployTrigger: "off"
-    envVars: *app-env
+    envVars: &worker_env
+      - *shared_settings
+      - *database
+      - *queue
+      - *namespace
+      - *proxy_trust
+      - key: APP_ORIGIN
+        fromService:
+          type: web
+          name: workquest-api
+          envVarKey: APP_ORIGIN
+      - key: DELIVERY_PAYLOAD_ENCRYPTION_KEY
+        fromService:
+          type: web
+          name: workquest-api
+          envVarKey: DELIVERY_PAYLOAD_ENCRYPTION_KEY
+      - key: SMTP_HOST
+        fromService:
+          type: web
+          name: workquest-api
+          envVarKey: SMTP_HOST
+      - key: SMTP_USERNAME
+        fromService:
+          type: web
+          name: workquest-api
+          envVarKey: SMTP_USERNAME
+      - key: SMTP_PASSWORD
+        fromService:
+          type: web
+          name: workquest-api
+          envVarKey: SMTP_PASSWORD
+      - key: SMTP_FROM
+        fromService:
+          type: web
+          name: workquest-api
+          envVarKey: SMTP_FROM
   - type: worker
     name: workquest-dispatcher
     runtime: docker
@@ -80,17 +127,17 @@ services:
     dockerContext: .
     dockerCommand: python -m app.jobs.dispatcher
     autoDeployTrigger: "off"
-    envVars: *app-env
+    envVars: *worker_env
   - type: cron
     name: workquest-cleanup
     runtime: docker
     region: singapore
     plan: 0.5c-512mb
-    schedule: "0 * * * *"
+    schedule: 0 * * * *
     dockerfilePath: ./apps/api/Dockerfile
     dockerContext: .
     dockerCommand: python -m app.cli.cleanup
-    envVars: *app-env
+    envVars: *worker_env
   - type: keyvalue
     name: workquest-queue
     region: singapore

@@ -2,7 +2,7 @@
 
 Updated: 2026-11-12, Asia/Kolkata. Repository: `/Users/gaggu/WorkQuest`. Authorized GitHub destination: **Gagandeepkaurrr/WorkQuest only**.
 
-**Local release candidate verified; Git publication in progress. Hosted release remains gated.** The complete 1,617-line supplied specification is preserved in PROJECT_SPECIFICATION.txt. The repository was initially empty; no applicable AGENTS.md existed. User styling instructions supersede the dark-default specification.
+**Local release candidate verified and pushed to GitHub; hosted CI running. Hosted release remains gated.** The complete 1,617-line supplied specification is preserved in PROJECT_SPECIFICATION.txt. The repository was initially empty; no applicable AGENTS.md existed. User styling instructions supersede the dark-default specification.
 
 ## Milestones
 
@@ -15,7 +15,7 @@ Updated: 2026-11-12, Asia/Kolkata. Repository: `/Users/gaggu/WorkQuest`. Authori
 | 5. Branches, debrief, progress | Implemented | Immutable checkpoints, independent forks/notes/transcripts, deterministic debrief, replay/comparison, first/latest/best progress, sanitized expiring/revocable shares |
 | 6. Remaining missions and admin | Implemented | Inventory t=11/zero new oversells/100; analytics t=10/90 orders/$9,000/100; draft import/edit/hash validation/copied preview/publish/archive/audit; DB immutability triggers |
 | 7. Product and operations | Implemented locally | White/glass/pegboard responsive UI; keyboard/mobile checks; metrics, cleanup, non-root images, CI, production Compose, Render/Vercel setup, local restore and load exercise |
-| 8. Release review | Local checks complete | Full verification, 8 browser journeys, independent review and corrected findings, image scans, container smoke and documentation completed. Git push/hosted CI pending. |
+| 8. Release review | Local checks complete | Full verification, 8 browser journeys, independent review and corrected findings, image scans, container smoke and documentation completed. Pushed to WorkQuest main; hosted CI pending. |
 
 ## Executed verification
 
@@ -26,7 +26,7 @@ Updated: 2026-11-12, Asia/Kolkata. Repository: `/Users/gaggu/WorkQuest`. Authori
 - `make backup-restore`: PASS — disposable restore, prior seeded migration upgrade, pinned scenario/checkpoint/replay hash verification. [Report](verification/restore-report.json). Production remote backup/RPO/RTO unverified.
 - Package audits: pnpm production audit and pip-audit passed with zero reported vulnerabilities; bounded source scan found zero known credential patterns. Not an exhaustive entropy/security audit. [Summary](verification/package-audit-summary.json).
 - Production API/web images built locally. Latest API and frontend high/critical Docker Scout scans: zero on local arm64 images. Final non-root/read-only container smoke passed: readiness, SPA/API/auth/run, inherited CSP, no-store, report noindex, restricted metrics. Scans are time-, architecture- and severity-specific, not a guarantee of no vulnerabilities.
-- Render file passes the official published JSON schema locally. Actual `render blueprints validate` in an account, paid provisioning and Vercel build/deploy are not performed.
+- Render file passes the official published JSON schema locally. Manual secret prompts are API-scoped and referenced by workers; signup is closed by default. Actual `render blueprints validate` in an account, paid provisioning and Vercel build/deploy are not performed.
 
 ## Independent review and corrections
 
@@ -39,6 +39,6 @@ A fresh-context reviewer inspected the complete working tree. Corrected: reset/l
 - Render/Vercel: no account provisioning, hosted build, TLS/secure-cookie/streaming/cache/log-redaction smoke test or real capacity measurement.
 - Trusted proxy identity: Render/Vercel forwarded client-IP chain must be verified/configured before multi-user signup. Default conservative trust can group clients under ingress authentication limits. Single-origin Compose has an exact configured trust chain; its public deployment is also unverified.
 - Offsite encrypted backups, alert delivery, measured production RPO24h/RTO4h: not configured or rehearsed.
-- GitHub-hosted CI: pending first push; local equivalent checks have run.
+- GitHub-hosted CI: running after the first push; local equivalent checks have run.
 
-Next: commit and push only to WorkQuest, then inspect GitHub CI. See [deployment commands](DEPLOY_RENDER_VERCEL.md), [operations](OPERATIONS.md), [limitations](KNOWN_LIMITATIONS.md), and [acceptance mapping](REQUIREMENTS_MATRIX.md).
+Next: finish GitHub CI and record its actual result. See [deployment commands](DEPLOY_RENDER_VERCEL.md), [operations](OPERATIONS.md), [limitations](KNOWN_LIMITATIONS.md), and [acceptance mapping](REQUIREMENTS_MATRIX.md).
