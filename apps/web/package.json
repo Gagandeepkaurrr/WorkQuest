@@ -1,0 +1,1 @@
+{"name":"@workquest/web","version":"0.1.0","private":true,"type":"module","scripts":{"dev":"vite --host 127.0.0.1","build":"tsc -b && vite build","typecheck":"tsc -b","lint":"eslint src","test":"vitest run","e2e":"playwright test"}}

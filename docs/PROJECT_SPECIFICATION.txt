@@ -1,0 +1,1617 @@
+WORKQUEST — CODEX MASTER BUILD PROMPT
+Version: 1.0
+Prepared: 11 November 2026
+Required application stack: React + FastAPI + PostgreSQL
+Deliverable: A working, tested, documented application and a verifiable production release candidate.
+
+HOW TO USE THIS FILE
+Attach this file to a Codex task in the repository where WorkQuest should be built, or paste its complete contents into the task. Treat the requirements below as the project specification. The repository paths in this document are relative to that repository. This file specifies an application; it does not claim that an application has already been implemented or tested.
+
+01. YOUR ROLE, GOAL, AND EXECUTION CONTRACT
+
+You are the lead full-stack engineer, product designer, and test engineer for WorkQuest. Build the application described here using React, FastAPI, and PostgreSQL. Produce real source code, migrations, scenario content, tests, containers, CI configuration, and operating documentation.
+
+WorkQuest lets a learner enter a fictional software company, investigate an incident, talk to AI teammates, inspect evidence, perform predefined simulated operations, and review the consequences. Its distinctive interaction is trying a different decision from a saved checkpoint while preserving the original attempt.
+
+Work in independently verifiable milestones. Inspect the existing repository, its instructions, and its installed dependencies before modifying it. Preserve unrelated work. For a greenfield repository, create the structure in section 05. Follow applicable repository instructions and tool permission boundaries.
+
+Implement the specification rather than stopping at a plan. Maintain these repository documents throughout the build:
+- docs/IMPLEMENTATION_PLAN.md: milestones, interfaces, and acceptance checks.
+- docs/REQUIREMENTS_MATRIX.md: requirement IDs, implementation locations, and verification evidence.
+- docs/DECISIONS.md: material architecture decisions and justified deviations.
+- docs/BUILD_STATUS.md: completed work, exact verification commands/results, remaining work, and the next concrete step.
+- docs/RELEASE_CHECKLIST.md: release gates with PASS, FAIL, or NOT VERIFIED.
+- docs/KNOWN_LIMITATIONS.md: genuine product and operational limitations.
+
+Resolve ordinary engineering choices using this specification and record them. Ask only when a missing decision materially changes scope or when credentials, paid services, destructive changes, or permissions genuinely block the next step. Continue independent local work while an external integration is blocked. Do not invent credentials, fabricate test results, or describe mock-provider success as a successful live-provider test.
+
+Use the requested stack. The frontend is a React application built with Vite and TypeScript, served as a single-page application. FastAPI owns application APIs, authentication, authorization, simulation rules, AI orchestration, and persistence. PostgreSQL is the authoritative data store.
+
+Production readiness is an evidence-backed release state. Implement the required safeguards and run their checks. If a live AI key, SMTP service, TLS domain, backup target, or deployment access is unavailable, deliver the implemented integration and clearly mark the relevant live release gate NOT VERIFIED. A local demo is not proof of a secure public deployment.
+
+Do not perform a public deployment, purchase infrastructure, send messages to real third parties, or connect the simulated operations to real infrastructure unless separately authorized. Local containers, local test email, fixtures, and isolated test databases are part of this build.
+
+02. PRODUCT DEFINITION AND FIRST-RELEASE BOUNDARY
+
+Product promise:
+"Practise the decisions behind software engineering by working through realistic incidents with AI teammates."
+
+Primary audience:
+Students, recent graduates, and early-career developers who want to practise investigation, communication, tradeoffs, and verification.
+
+Primary experience:
+Choose a mission -> enter a believable workplace -> inspect evidence and ask questions -> take a simulated action -> inspect the result -> submit a conclusion -> receive an evidence-linked debrief -> try another branch.
+
+The first production candidate must contain three complete authored scenarios:
+1. Checkout outage after a coupon rollout.
+2. Inventory overselling caused by a reservation race.
+3. A misleading analytics report caused by inconsistent time zones.
+
+Build the first scenario end to end before generalizing and adding the other two. All three are required for the final first-release acceptance. Section 19 specifies their mechanics and content. They must be meaningfully different, with working successful and unsuccessful paths.
+
+Roles:
+- Visitor: public introduction, mission previews, authentication, explicitly shared reports.
+- Learner: owns runs, branches, conversations, notes, results, and report shares.
+- Admin: manages scenario drafts, validation, publication, archival, and operational summaries.
+- Local demo guest: a short-lived learner identity with strict limits and fixture-only mode.
+
+An admin role does not grant a general impersonation feature. Administrative access to operational metadata must not expose private learner conversations by default.
+
+First-release scope:
+- Solo missions with AI teammates.
+- Three authored cases with deterministic outcomes.
+- An interactive workspace, persisted progress, checkpoints, branching, replay, scoring, and coaching.
+- Account security, scenario administration, usage limits, resilient background jobs, and deployable infrastructure.
+
+Deferred scope:
+- Multiplayer, voice, live video, arbitrary user code execution, real production infrastructure access, payment processing, employer hiring decisions, formal certifications, unrestricted AI-generated missions, and a visual no-code game builder.
+- A coding sandbox, cohort management, internationalization, and additional model providers can follow after the release gates pass.
+- Do not create visible navigation or nonfunctional buttons for deferred features.
+
+The product describes missions as practice simulations. It does not claim to provide a real internship, verify employment readiness, or issue an accredited qualification.
+
+03. REQUIRED FUNCTIONALITIES AND PRODUCT ACCEPTANCE
+
+F01 — Accounts and onboarding
+Implement sign-up, email verification, sign-in, sign-out, password recovery, password change, profile settings, session revocation, and account deletion. Local email goes to Mailpit. Provide a short dismissible first-run guide and an explicit demo entry point where demo mode is enabled.
+
+F02 — Mission library
+Show published missions with title, short problem statement, role, difficulty, approximate human completion time, skills practised, and Continue or Start action. Support search and simple filters. Archived missions disappear from new-start listings but remain accessible through existing owned runs.
+
+F03 — Mission briefing
+Explain the fictional company, incident, objectives, available tools, how logical time works, and how scores are determined. Starting a mission creates persisted data immediately. Starting a fresh run never silently deletes an existing run.
+
+F04 — Workspace
+Provide Team, Evidence, Tasks, Service, Actions, Notes, and Timeline panels. A learner can inspect evidence without losing a chat draft. Restore the last selected branch and panel after reload.
+
+F05 — AI teammates
+Provide two authored teammates per scenario with different roles and fact visibility. Persist messages, display citations to permitted evidence, provide clear queued/working/failed/stale states, and allow bounded retries. Chat cannot execute simulation actions.
+
+F06 — Evidence and investigation
+Support authored Markdown/text documents, log excerpts, CSV-style tables, and diagrams represented with accessible text or SVG. Provide search over currently available evidence only. Evidence viewing and opening are authorized server-side. Hidden evidence must not leak through search snippets, API payloads, static bundles, or guessed IDs.
+
+F07 — Tasks and decisions
+Render server-derived objective completion. Provide hypothesis submission, evidence references, structured status updates, and private learner notes. A visual task interaction must not bypass the scenario's actual completion rules.
+
+F08 — Simulated operations
+Show a finite list of scenario-defined operations with their target, inputs, prerequisites, logical-time cost, and potential simulated impact. Review an action before executing it. Only a validated server command changes the simulated service.
+
+F09 — Persistence and recovery
+Persist a run's world state, transcript, evidence access, decisions, notes, logical clock, and branch context. Refresh, reconnect, or sign in again to resume the correct state. Never reset a mission merely because a browser reconnects.
+
+F10 — Checkpoints, branches, and replay
+Create settled checkpoints and let learners choose "Try another approach from here." Create a new branch; keep the original intact. Replay recorded history without repeating operations or calling a model. Provide a simple side-by-side branch result comparison.
+
+F11 — Debrief
+Calculate a deterministic 0–100 score with criterion-level evidence. Present the achieved outcome, investigation timeline, missed checks, hints used, and optional AI coaching. Results remain available when coaching is delayed or unavailable.
+
+F12 — Progress
+Show unique missions completed, attempt history, latest result, best result, and criterion-level practice history. A fork is not a new user or a new unique mission completion. Show the first-attempt result separately from the best repeat-practice result, with hint usage alongside both.
+
+F13 — Reports and sharing
+Provide a private print-friendly report and JSON export. Allow optional public sharing of a frozen, sanitized report snapshot, with preview, expiry, and immediate revocation. Sharing defaults to off.
+
+F14 — Scenario administration
+Provide draft creation, editing, JSON import/export, schema validation, deterministic scenario checks, preview, publication, and archival. Published definitions are immutable. Editing a published case creates a new draft version.
+
+F15 — Reliability and limits
+Implement recoverable AI jobs, bounded retries, request idempotency, concurrency protection, durable event delivery, rate limits, per-user and global AI quotas, and failure states that preserve learner work.
+
+F16 — Delivery and operations
+Provide reproducible local setup, deterministic demo data, Docker Compose, CI, test suites, environment validation, observability, backup/restore instructions, deployment instructions, and a release checklist with actual evidence.
+
+04. TECHNOLOGY STACK AND DEPENDENCY POLICY
+
+Required frontend:
+- React with TypeScript strict mode.
+- Vite for development and production builds.
+- React Router for client routes and protected layouts.
+- TanStack Query for server-state fetching, invalidation, and mutations.
+- Tailwind CSS and shadcn/ui for a consistent accessible component foundation.
+- React Hook Form and Zod for forms and client-side validation.
+- A small Zustand store only for local UI preferences such as panel selection and layout. Do not duplicate authoritative server state in it.
+- Recharts for small service-state charts, with accessible numeric/table equivalents.
+- Lucide icons. Use one icon family consistently.
+- Vitest, React Testing Library, Playwright, and axe-core for appropriate verification.
+
+Required backend:
+- FastAPI with Python type annotations and Pydantic validation.
+- SQLAlchemy 2.x using its current supported stable series, Alembic migrations, and psycopg 3.
+- Async database access in HTTP/SSE handlers with a session per request or task; do not share an AsyncSession across concurrent tasks.
+- A synchronous SQLAlchemy session and synchronous provider client in Celery tasks is acceptable and preferred over moving shared async engines between worker event loops.
+- PostgreSQL 18 with a current supported minor release.
+- Redis for Celery transport, short-lived notifications, and rate limiting. Redis is not the source of truth for run state, accepted jobs, or quotas that must survive a restart.
+- Celery for AI and email jobs, backed by PostgreSQL job/outbox records.
+- A dispatcher/recovery process using the same backend codebase.
+- pwdlib/Argon2 or an equivalent maintained Argon2 implementation for passwords.
+- pytest, HTTPX, and property-based tests where useful for the deterministic engine.
+
+AI:
+- A narrow application-owned provider interface.
+- Required adapters: a deterministic mock provider and one real Gemini provider using the official supported SDK.
+- Model IDs and parameters are configuration, not scattered constants.
+- Verify the currently supported stable model and structured-output interface against official documentation at implementation time.
+- Default local/test mode to mock. A live configuration must validate its model and credentials explicitly.
+- A second provider is an extension, not a first-release completion requirement.
+- Do not add LangChain, LangGraph, a vector database, or a multi-agent framework unless a demonstrated requirement makes it necessary and the decision is documented. The authored fact sets fit an explicit visibility-filtered context builder.
+
+Development and operations:
+- Node 24 LTS or another currently supported LTS verified compatible with the selected frontend dependencies; pin the chosen version.
+- Python 3.14 as the preferred baseline. If a required package has a verified incompatibility, document and pin a supported fallback before implementation.
+- pnpm with a pinned package-manager version and committed lockfile.
+- uv with a committed lockfile for Python.
+- Docker and Docker Compose v2.
+- A reverse proxy serving the built SPA and routing /api to FastAPI under one origin.
+- GitHub Actions for CI.
+- Mailpit in local development only.
+- Structured application logs and Prometheus-compatible internal metrics.
+
+Pin actual resolved versions and container image tags/digests in the delivered repository. Do not use floating latest tags for a production release. Record versions, compatibility decisions, and reference dates in docs/DEPENDENCIES.md. Use the current stable syntax for Tailwind, React Router, FastAPI, and provider SDKs; do not copy obsolete examples merely because they are familiar.
+
+This is a modular monolith with separate runtime processes. Do not introduce microservices, Kubernetes, a separate realtime datastore, or a second primary application database for this release.
+
+05. REPOSITORY STRUCTURE AND MODULE RESPONSIBILITIES
+
+Create this structure, adapting only where an existing repository convention is clearly better:
+
+workquest/
+  README.md
+  .env.example
+  .gitignore
+  .dockerignore
+  .node-version
+  .python-version
+  package.json
+  pnpm-lock.yaml
+  pnpm-workspace.yaml
+  Makefile
+  compose.yaml
+  compose.production.yaml
+  apps/
+    web/
+      package.json
+      vite.config.ts
+      tsconfig.json
+      index.html
+      public/
+      src/
+        main.tsx
+        app/
+          router.tsx
+          providers.tsx
+          error-boundary.tsx
+        components/
+          ui/
+          layout/
+          feedback/
+        features/
+          auth/
+          missions/
+          workspace/
+          conversations/
+          evidence/
+          actions/
+          timeline/
+          branches/
+          debrief/
+          progress/
+          reports/
+          settings/
+          admin/
+        lib/
+          api-client.ts
+          csrf.ts
+          event-stream.ts
+          errors.ts
+          formatting.ts
+        generated/
+          api-types.ts
+        styles/
+          tokens.css
+          globals.css
+          print.css
+        test/
+      e2e/
+    api/
+      pyproject.toml
+      uv.lock
+      alembic.ini
+      migrations/
+        versions/
+      app/
+        main.py
+        api/
+          dependencies.py
+          router.py
+        core/
+          config.py
+          logging.py
+          errors.py
+          security.py
+          rate_limits.py
+        db/
+          base.py
+          sessions.py
+        modules/
+          auth/
+          users/
+          scenarios/
+          runs/
+          conversations/
+          checkpoints/
+          scoring/
+          reports/
+          admin/
+        engine/
+          types.py
+          commands.py
+          transitions.py
+          visibility.py
+          projections.py
+          scoring.py
+          replay.py
+          registry.py
+          mechanics/
+            checkout_v1.py
+            inventory_v1.py
+            analytics_v1.py
+        ai/
+          contracts.py
+          context.py
+          validation.py
+          prompts/
+          providers/
+            mock.py
+            gemini.py
+        jobs/
+          celery_app.py
+          tasks.py
+          outbox.py
+          dispatcher.py
+          leases.py
+        cli/
+          seed.py
+          create_admin.py
+          validate_scenarios.py
+          purge_expired_data.py
+      content/
+        scenarios/
+          checkout-outage/
+          inventory-race/
+          analytics-timezone/
+      tests/
+        unit/
+        integration/
+        contract/
+        fixtures/
+        golden/
+  packages/
+    contracts/
+      openapi.json
+      scenario.schema.json
+  infra/
+    docker/
+      web.Dockerfile
+      api.Dockerfile
+    proxy/
+      nginx.conf
+      nginx.production.conf
+  scripts/
+    dev-bootstrap.sh
+    verify.sh
+    generate-contracts.sh
+    backup-db.sh
+    restore-db.sh
+    smoke-test.sh
+  docs/
+    IMPLEMENTATION_PLAN.md
+    REQUIREMENTS_MATRIX.md
+    DECISIONS.md
+    DEPENDENCIES.md
+    BUILD_STATUS.md
+    ARCHITECTURE.md
+    SCENARIO_AUTHORING.md
+    AI_CONFIGURATION.md
+    SECURITY.md
+    DEPLOYMENT.md
+    OPERATIONS.md
+    BACKUP_RESTORE.md
+    DATA_RETENTION.md
+    ACCESSIBILITY.md
+    KNOWN_LIMITATIONS.md
+    RELEASE_CHECKLIST.md
+  .github/
+    workflows/
+      ci.yml
+      security.yml
+
+Within a backend feature module, use focused router, schema, service, repository, and model files as needed. Avoid one giant routes file or service class. Domain rules belong in engine/, application transactions in services, persistence in repositories, and HTTP translation in routers.
+
+Within a frontend feature, colocate pages, components, hooks, schemas, and tests. Keep shared components free of scenario-specific rules.
+
+Pydantic request/response schemas and the exported FastAPI OpenAPI schema are the API contract source of truth. Generate TypeScript API types and fail CI if checked-in contracts drift. Do not maintain a second handwritten set of incompatible backend DTOs.
+
+Private scenario solutions, mechanics, rubric internals, seed secrets, and full scenario JSON must never be imported into apps/web or copied to its public directory. Public scenario metadata and visible evidence are delivered through explicit safe API projections.
+
+06. ARCHITECTURE AND NON-NEGOTIABLE INVARIANTS
+
+The frontend sends authenticated HTTP requests and listens to server-sent events. FastAPI authenticates, authorizes, validates commands, invokes the deterministic engine, and commits PostgreSQL changes. AI work runs outside request transactions through a durable job/outbox flow. Celery and Redis transport work but do not determine whether it exists or succeeded.
+
+ARCH01: The backend owns world facts, inventory, flags, metrics, logical time, available actions, task completion, outcome, and score.
+
+ARCH02: AI supplies conversation and coaching. It receives only authorized context. Its output cannot directly change simulation state or deterministic scores.
+
+ARCH03: Every run is pinned to an immutable scenario version, mechanics engine version, and scoring version. An engine upgrade must preserve support for existing versions or provide an explicit tested migration. Never silently replay old runs through new rules.
+
+ARCH04: One accepted world command atomically persists state, its new revision, its domain events, its idempotent response, and any resulting outbox work.
+
+ARCH05: state_revision is a branch-local concurrency counter for deterministic world commands. event_seq is a separate branch-local sequence for all committed events, including chat and job notifications.
+
+ARCH06: A checkpoint is immutable. Trying a different approach creates a new branch. It never rewinds the parent or reuses future context.
+
+ARCH07: PostgreSQL is authoritative. Rebuilding Redis or restarting an API/worker must not lose acknowledged commands, accepted jobs, results, or checkpoints.
+
+ARCH08: Replay uses recorded commands and replies. It performs no provider calls, sends no email, and dispatches no operations.
+
+ARCH09: Every resource is authorized through its owner/run/branch relationship. UUIDs and client route guards are not authorization.
+
+ARCH10: Simulation success and rubric scores remain computable when the AI provider is unavailable.
+
+ARCH11: Public responses use dedicated projection schemas. Raw ORM serialization and raw private snapshots are forbidden for learner endpoints.
+
+ARCH12: A simulated action is always visibly identified as simulated and cannot reach real merchant, cloud, payment, or deployment infrastructure.
+
+Use a transactional state row plus append-only event history. Do not turn every screen into a separately rebuilt distributed event-sourced projection. Store canonical hashes to verify state replay, not to suggest that hashes prove AI correctness.
+
+07. VISUAL DESIGN, ROUTES, AND FRONTEND COMPONENTS
+
+Design direction:
+A polished mission-control workspace with a strong product identity, clear typography, believable seeded content, and restrained motion. The site must have a memorable landing page and a highly usable application.
+
+Use a deep ink/navy workspace as the default theme, with a complete light theme:
+- Dark canvas: #0B1020.
+- Dark panels: #121A2B and #182235.
+- Primary text: #EEF2F6.
+- Secondary text: a contrast-verified cool gray.
+- Primary accent: a restrained lime or mint, such as #B7F36B.
+- Incident/warning: amber; destructive actions: accessible red; informational actions: blue.
+- Use text and icons alongside status colors.
+- Use locally bundled Inter or a comparable licensed sans serif; a monospace face for logs and code-like evidence.
+- Define colors, typography, spacing, radii, shadows, and motion as tokens. Verify actual contrast in both themes.
+- Prefer subtle transitions around 120–200 ms. Respect prefers-reduced-motion.
+- Avoid decorative charts, invented testimonials, fabricated usage counts, perpetual typing animations, and visual effects that obstruct investigation.
+
+Routes:
+- / : public landing, accurate interactive preview, product explanation, primary "Start a mission" action.
+- /sign-in, /sign-up, /verify-email, /forgot-password, /reset-password.
+- /missions : learner home and published mission library with recent progress.
+- /missions/:slug : briefing and start/continue options.
+- /runs/:runId?branch=:branchId&panel=:panel : persistent workspace.
+- /runs/:runId/debrief?branch=:branchId : finalized result and coaching.
+- /runs/:runId/compare?left=:branchId&right=:branchId : same-run branch comparison.
+- /progress : mission history and personal skill practice.
+- /settings : profile, theme, sessions, export, and deletion.
+- /reports/:token : sanitized public report or neutral unavailable state.
+- /admin/scenarios : drafts, versions, and archival.
+- /admin/scenarios/:scenarioId/edit?version=:versionId : schema-backed editor.
+- /admin/scenarios/:scenarioId/preview?version=:versionId : isolated preview run.
+- /admin/operations : aggregate queue health, provider usage, and error summaries without private chats.
+
+Required components:
+- AppShell, PublicHeader, LearnerNavigation, AdminNavigation, PageHeader.
+- MissionCard, MissionFilters, ContinueMissionCard, MissionBriefing, ObjectiveList.
+- MissionShell, MissionHeader, WorkspaceNavigation, ContextDrawer, WorkspaceHelp.
+- TeammateList, TeammateProfile, ConversationThread, ChatComposer, MessageStatus, EvidenceReference.
+- EvidenceIndex, EvidenceSearch, EvidenceViewer, LogViewer, DataTable, ArtifactUnavailable.
+- TaskBoard, TaskCard, InvestigationChecklist, HypothesisForm, StatusUpdateForm.
+- ServiceDashboard, MetricPanel, MetricHistoryChart, ReleaseStatus, SimulationClock.
+- SafeActionPanel, ActionReviewDialog, ActionResult, ActionPrerequisiteList.
+- NotesEditor, SaveStatus, UnsavedDraftWarning.
+- ActivityTimeline, EventDetail, CheckpointList, BranchSwitcher, BranchComparison.
+- DebriefScorecard, CriterionResult, OutcomeSummary, QualitativeFeedback, RetryFromCheckpoint.
+- ShareReportDialog, SharePreview, ShareManagement, PrintReport.
+- ScenarioEditor, ScenarioValidationPanel, PublishDialog, AdminPreviewBanner.
+- EmptyState, ErrorState, LoadingSkeleton, ConnectionBanner, ConfirmationDialog, ToastRegion.
+
+Workspace layout:
+- At wide desktop widths, use a compact navigation rail, a spacious primary panel, and an optional evidence/context drawer. Do not force three unreadably narrow columns.
+- Allow the learner to keep a conversation visible while inspecting evidence.
+- Show the current objective, branch name, logical time, and connection state consistently.
+- Task completion is read-only and server-derived.
+- The action confirmation names the simulated target, logical-time cost, and chosen parameters. It does not promise success.
+- The service dashboard displays actual engine state. It must not optimistically invent improved metrics.
+- Unopened evidence shows 'First open: +1 simulated minute'; opened evidence shows 'Reopen: no time cost'. Confirm before an evidence opening that would reach the logical cap and finalize the attempt.
+- Include a functional Hint control backed by mission.hint and explicit hint-use events.
+- Support keyboard panel switching and a clearly documented command menu, while avoiding conflicts with browser and assistive-technology shortcuts.
+
+Mobile:
+- At 360–430 px widths, use one primary panel with labeled navigation tabs or a sheet.
+- Open evidence full-screen with a reliable return path.
+- Keep the composer and primary actions accessible without covering content.
+- Tables scroll within their panel and provide a readable summary. Critical tasks cannot depend on hover.
+- A learner can finish a mission on mobile, though a larger screen may be more comfortable.
+
+Required states:
+- Distinguish initial loading, no content, no search matches, permission failure, and network failure.
+- Restore a saved run before rendering its controls; do not flash fresh initial metrics.
+- Preserve unsent chat and note drafts across transient errors.
+- On a command timeout, recover the result using the same idempotency key before allowing another submission.
+- When stale data is detected, show a reconnect/reload state and disable state-changing controls until authoritative state is recovered.
+- Show AI queued, working, failed, cancelled, quota-limited, and stale-context states with specific next actions.
+- Keep deterministic debrief results visible while optional AI coaching is unavailable.
+- Public expired/revoked reports use the same neutral unavailable screen.
+
+Accessibility:
+Target WCAG 2.2 AA and record tested behavior. Require visible keyboard focus, semantic headings, properly labeled forms, descriptive error messages, dialog focus trapping/restoration, skip links, usable touch targets, reduced motion, and text/table alternatives for critical charts.
+Use polite announcements for completed messages and significant state updates. Do not announce every generated token. Simulation scores must not penalize slower reading, screen-reader use, tab inactivity, or real-world pauses.
+
+08. SCENARIO FORMAT, ENGINE INTERFACES, AND LOGICAL TIME
+
+Use versioned private JSON scenario definitions validated by a strict Pydantic model and an exported JSON Schema. Reject unknown keys where ambiguity would affect security or mechanics.
+
+A scenario definition must contain:
+- schema_version, scenario_id, slug, content_version, mechanics_id, engine_version, scoring_version.
+- Public metadata: title, short description, learner role, difficulty, approximate human duration, tags, learning objectives, and briefing.
+- initial_state and allowed domain enums.
+- teammates with stable IDs, role descriptions, persona instructions, and authorized fact-selection rules.
+- facts with stable IDs, canonical factual text, source artifact IDs, and disclosure prerequisites.
+- artifacts with stable IDs, type, authored body/data, public title when available, visibility conditions, and first-open logical cost.
+- action_catalog with stable IDs, display labels, registered handler IDs, parameter schemas, prerequisite rules, logical cost, and confirmation copy.
+- objectives and rubric criteria linked to registered deterministic predicates.
+- initial messages and deterministic event-triggered notifications.
+- authored hints with stable IDs, ordered levels, safe text, and disclosure prerequisites.
+- explicit successful and unsuccessful outcome definitions.
+- a default deterministic seed if randomness is ever added. The first three cases need no randomness.
+- golden action sequences, expected outcomes, and negative test cases.
+
+Do not execute arbitrary Python, SQL, JavaScript, shell commands, template expressions, or user-defined code from scenario JSON. mechanics_id resolves through a fixed allowlisted registry containing checkout_v1, inventory_v1, and analytics_v1. Authors can compose content and supported predicates; registering new mechanics requires reviewed backend code.
+
+Use a small typed predicate vocabulary for visibility/objectives, such as all, any, field_equals, artifact_opened, and action_result. Validate every referenced fact, artifact, action, and criterion. Do not use eval or dynamic import paths from an authored file.
+
+Required engine boundaries:
+- apply_command(state, command, context) -> TransitionResult.
+- project_visible_state(state, scenario, learner_context) -> VisibleWorldState.
+- eligible_character_facts(state, scenario, teammate_id) -> CharacterContext.
+- evaluate_score(state, scenario, evidence_ledger) -> Scorecard.
+- replay_branch(base_snapshot, recorded_commands) -> ReplayResult.
+- validate_scenario(definition) -> ValidationReport.
+
+Make the concrete argument/return types explicit in code. TransitionResult includes next_state, deterministic events, task changes, outcome changes, and logical ticks applied. The pure engine cannot read a database, system clock, network, environment secret, or model response.
+
+Logical time:
+- Section 19 defines each operation's exact cost.
+- First opening an investigative artifact costs one logical minute; reopening it costs zero.
+- Casual chat, lists, notes, checkpoint creation, and ordinary UI navigation cost zero.
+- Apply an accepted action's effects first, then execute the exact number of deterministic workload ticks specified for that action.
+- Reject actions whose full cost would exceed the scenario cap. An action reaching the cap ends the branch in the same transaction with a partial assessment.
+- The cap is 20 logical minutes for the seeded cases.
+- Use integer ticks, integer cents, and explicitly defined ratios. Do not use floating-point money.
+- Wall-clock time is for infrastructure measurements and operational timestamps only. Reading more slowly does not advance the simulation.
+- Verification fingerprints include only state relevant to that test, not incidental chat, sequence numbers, or unrelated profile changes.
+
+World-command transport:
+POST a command with type, payload, and expected_state_revision. Map scenario action IDs directly to registered command handlers.
+Common IDs include evidence.open, mission.diagnose, mission.update, mission.recap, mission.hint, mission.finish, and the named operational commands in section 19.
+Checkpoint creation and forking use their own persistence endpoints. They are not operations that reset the existing world.
+No frontend calculation can award points, complete an objective, or declare the service healthy.
+
+09. TRANSACTIONS, IDEMPOTENCY, AND CONCURRENT ACTIONS
+
+Use a branch-row lock and a consistent lock order for commands. Each accepted deterministic command increments state_revision exactly once, even if it emits several events. Allocate event_seq for each persisted event under the branch lock. Read-only HTTP requests do not append events. A zero-cost command can still change evidence, diagnosis, or communication records and therefore advance state_revision.
+
+Require an Idempotency-Key for state-changing run/branch commands, chat submission, checkpoints, forks, finalization, and sharing. The key is a client-generated UUID. Scope it to authenticated user, operation/resource, and key. Hash the canonical request body and resource path.
+
+Command transaction:
+1. Authenticate and authorize the requested resource.
+2. Establish or inspect the idempotency record.
+3. If a committed identical request exists, return its recorded response before checking the now-current revision.
+4. If the key was used for a different request, return IDEMPOTENCY_CONFLICT.
+5. Lock the branch and validate status and expected_state_revision.
+6. Validate the typed command and scenario prerequisites.
+7. Calculate the transition without external calls.
+8. Persist state, state_revision, events, scoring ledger changes, relevant verification records, outbox work, and the successful response atomically.
+9. Commit, then return the safe projected result.
+
+Do not hold the transaction open during a model request, email delivery, or arbitrary sleep.
+
+Two distinct commands submitted against the same revision must yield one accepted transition and one STALE_REVISION conflict. The client refreshes and lets the learner deliberately retry. Never automatically reapply a conflicting business command to a different world state.
+
+For an ambiguous network timeout, resubmit the same key and exact body or query the command-status endpoint. Do not create a fresh key until the prior request's outcome is known.
+
+Invalid or rejected commands do not consume logical time or change world state. Failed validation need not reserve a permanent idempotency record. Test simultaneous duplicate-key requests and transaction rollback.
+
+10. ACCOUNTS, AUTHORIZATION, AND SECURITY
+
+Use server-side opaque sessions rather than storing bearer credentials in browser localStorage.
+
+Accounts:
+- Normalize and uniquely index email addresses.
+- Hash passwords with Argon2 using a maintained library and documented parameters.
+- Support long passphrases, a minimum of 12 characters and a maximum of at least 128 characters, with a bounded input-size limit before hashing. Do not truncate silently.
+- Use generic sign-in/recovery responses that do not reveal whether an account exists.
+- Verification tokens and reset tokens are cryptographically random, stored hashed, purpose-bound, single-use, and expiring.
+- Default verification expiry: 24 hours. Default reset expiry: 30 minutes.
+- Password reset/change invalidates other sessions. Rotate the active session after login and sensitive credential changes.
+- Require a verified account for public-production live AI usage and report sharing.
+- Local development can verify through Mailpit. Do not mark every production account verified automatically.
+
+Sessions:
+- Generate at least 32 cryptographically random bytes for the session token; store only its secure digest.
+- Default absolute expiry: seven days, configurable downward.
+- Production cookie: __Host-wq_session, Secure, HttpOnly, SameSite=Lax, Path=/, no Domain attribute.
+- A clearly separate local HTTP cookie name may omit Secure only in local/test profiles.
+- Support listing and revoking sessions, without exposing raw tokens.
+- Logout revokes server-side state. SSE connections must notice revocation within a bounded interval.
+
+CSRF and origin protection:
+- Serve browser frontend/API on one origin in production.
+- Validate Origin, or a same-origin Referer when appropriate, for unsafe browser requests including sign-in, sign-up, recovery, logout, and state mutations.
+- Use a vetted synchronizer-token implementation bound to an authenticated session for authenticated unsafe requests. Bootstrap the CSRF token through a same-origin authenticated response and send it in X-CSRF-Token.
+- For an active session, keep the synchronizer CSRF token stable across browser tabs; rotate it with the session. Do not invalidate other tabs on every token bootstrap.
+- Keep session authentication in the HttpOnly cookie. Never put session tokens in URLs or localStorage.
+- Reject cross-origin unsafe requests and missing/invalid CSRF tokens where required.
+- Dev proxying must preserve the same-origin browser model. Explicit allowed origins only; no wildcard credentials configuration.
+
+Authorization:
+- Check ownership for runs, branches, events, messages, jobs, notes, checkpoints, scorecards, exports, and shares.
+- Return a neutral 404 for another learner's resource or unavailable hidden artifact; return 401 for an unauthenticated protected request.
+- Verify admin capabilities on the server for each admin route.
+- Never accept user_id, role, score, world_state, fact visibility, or publication status as trustworthy client authority.
+- Use dedicated read DTOs for public metadata, learner state, admin definitions, and internal engine state.
+
+Input and output:
+- Validate types, ranges, enums, lengths, IDs, and cross-resource references.
+- Restrict chat messages to 4,000 characters and private notes to 20,000 characters.
+- Limit authored JSON import to 2 MiB with explicit nesting/collection limits.
+- Render model and authored Markdown through a restrictive sanitizer with raw HTML disabled.
+- Disable remote image fetching and unapproved URL embedding in model responses.
+- Prevent path traversal in any file access. Scenario imports contain data, not arbitrary filesystem paths.
+- Never execute learner-supplied SQL or shell text.
+- Put API keys, database credentials, SMTP credentials, and signing/session secrets only in server configuration.
+
+Abuse controls:
+- Use Redis-based IP/account rate limits for authentication and endpoints, with documented defaults and 429 plus Retry-After.
+- Persist important AI usage/quota counters in PostgreSQL.
+- Restrict each user to a bounded number of active runs and each branch to one active dialogue job.
+- Apply body-size limits at proxy and application layers.
+- Fail closed for sensitive authentication or new live-AI requests when required quota checks cannot be performed. Existing deterministic simulation work should remain usable when feasible.
+
+Administrative bootstrap:
+Provide an explicit CLI to create/promote an administrator with an interactive password prompt or secure stdin. Do not ship default production credentials, a public role-promotion endpoint, or secrets in a seed file. Demo users are never admins.
+
+Demo:
+Create isolated, short-lived guest identities rather than a shared writable account. Default expiry: two hours. Allow only the first scenario, mock AI, and a bounded number of runs/branches. Disable public report sharing, administrative access, and account exports for demo guests. Show a persistent Demo label. Guest cleanup is an idempotent maintenance task.
+
+Account deletion:
+Require reauthentication and confirmation. Revoke sessions and shares immediately, cancel queued jobs, prevent running jobs from publishing, and purge owned data through an authorized cleanup workflow. Event immutability applies to normal product operations; it must not prevent permitted privacy deletion. Document backup-retention implications.
+
+11. POSTGRESQL DATA MODEL
+
+Use UUID primary keys, explicit foreign keys, timestamptz for operational timestamps, integer logical ticks, and migrations for every schema change. JSONB stores typed scenario/world payloads; it does not replace relational ownership and constraints.
+
+Required records:
+
+users
+  id, normalized_email, password_hash, display_name, role, email_verified_at,
+  created_at, updated_at, deleted_at, demo_expires_at.
+
+auth_sessions
+  id, user_id, token_digest, csrf_secret, created_at, expires_at, revoked_at,
+  last_seen_at, coarse user-agent metadata. Unique token_digest.
+
+auth_tokens
+  id, user_id, purpose, token_digest, expires_at, used_at. Unique token_digest.
+
+user_preferences
+  user_id, theme, reduced_motion_preference, workspace_layout, onboarding_completed_at.
+  Layout data is bounded and contains no authoritative scenario state.
+
+scenarios
+  id, slug, public_metadata, active_published_version_id, archived_at, created_by.
+
+scenario_versions
+  id, scenario_id, version_number, status, schema_version, mechanics_id,
+  engine_version, scoring_version, definition_private_json, content_hash,
+  draft_revision, validation_report, validated_hash, published_at, created_by.
+  Unique (scenario_id, version_number). Published definition fields are immutable.
+
+runs
+  id, owner_id, scenario_version_id, is_admin_preview, is_demo,
+  preview_definition_private_json, preview_definition_hash,
+  started_at, last_activity_at, active_branch_id, archived_at.
+  Preview fields are immutable and required only for preview runs.
+
+learner_scenario_progress
+  owner_id, scenario_id, first_run_id, created_at.
+  Unique (owner_id, scenario_id). Assign the first run atomically when it is created,
+  not when it is finalized. Later roots and every fork are repeat practice.
+
+branches
+  id, run_id, label, parent_branch_id, source_checkpoint_id, source_event_seq,
+  base_snapshot_private_json, current_state_private_json, current_state_hash,
+  state_revision, last_event_seq, status, practice_mode, created_at, finalized_at.
+  Status: active, paused, finalized, or abandoned.
+  Parent/source references must belong to the same run.
+
+branch_events
+  id, branch_id, seq, type, actor_kind, actor_id, command_id,
+  state_revision_after, logical_tick, payload_private_json, payload_public_json,
+  created_at. Unique (branch_id, seq). Normal application operations append only.
+
+command_requests
+  id, user_id, operation_scope, idempotency_key, request_hash,
+  response_status, response_json, sensitive_response_payload_id, created_at, expires_at.
+  Unique (user_id, operation_scope, idempotency_key).
+  Keep records for at least the active run lifecycle plus the documented retry window.
+
+checkpoints
+  id, branch_id, label, source_state_revision, source_event_seq,
+  state_hash, snapshot_private_json, display_prefix_json, created_at.
+  Immutable after creation. Snapshot includes the scoring ledger and verification fingerprints.
+
+learner_notes
+  id, branch_id, body, revision, updated_at.
+  Notes are private and do not award points.
+
+ai_jobs
+  id, branch_id, kind, request_event_id, captured_state_revision,
+  captured_event_seq, eligible_context_private_json, input_hash,
+  status, attempt_count, lease_token, lease_expires_at, next_attempt_at,
+  result_event_id, failure_code, last_dispatched_at, created_at, updated_at.
+  Also persist scorecard_id and captured_scorecard_hash for debrief jobs only.
+  Job kinds: dialogue or debrief. Use a separate email_jobs record for email.
+  Enforce one queued/running dialogue job per branch with an appropriate partial constraint.
+
+ai_call_attempts
+  id, job_id, attempt_number, provider, model, prompt_version,
+  started_at, finished_at, outcome, input_tokens, output_tokens,
+  estimated_cost, cost_currency, cost_certainty, pricing_version.
+  Cost certainty: measured_usage_estimate, estimated_usage, or unknown.
+  Unique (job_id, attempt_number). Do not label token-price calculations as the final provider invoice.
+
+secret_payloads
+  id, purpose, encrypted_payload, key_version, expires_at, destroyed_at.
+  For short-lived email-delivery and secret-response replay data only. Encrypt with
+  a maintained authenticated-encryption library and a server-held versioned key.
+
+email_jobs
+  id, user_id, kind, secret_payload_id, status, attempt_count, lease_token,
+  lease_expires_at, last_dispatched_at, created_at, updated_at.
+  Email tasks do not consume AI quotas or create ai_call_attempts.
+
+outbox
+  id, topic, payload_id, created_at, published_at, attempts, next_attempt_at.
+  Payloads reference IDs rather than embedding secrets or full prompts.
+
+scorecards
+  id, branch_id, terminal_state_revision, scenario_version_id, scoring_version,
+  criteria_json, total_score, outcome, coaching_status, coaching_text,
+  deterministic_hash, created_at. Unique finalized scorecard per branch.
+  The deterministic hash excludes mutable coaching text/status and sharing metadata.
+  Coaching may be updated through a recorded job without changing deterministic results.
+
+report_shares
+  id, owner_id, scorecard_id, token_digest, sanitized_snapshot_json,
+  created_at, expires_at, revoked_at. Unique token_digest.
+  Keep the original report immutable even if the learner later edits profile details.
+
+usage_counters
+  scoped user/global quota keys, accounting period, accepted requests,
+  reserved requests/tokens, measured usage, updated_at.
+  Use atomic updates/row locks so concurrent requests cannot bypass quotas.
+
+admin_audit_events
+  actor_id, operation, target_type, target_id, version/hash references,
+  request_id, timestamp, and minimal safe metadata.
+
+Conversation storage:
+For v1, store typed user/assistant message events plus the inherited checkpoint transcript prefix. A materialized conversation table is optional only if it is a projection of those events and consistency is tested. Do not maintain two competing transcript authorities.
+
+Derived data:
+Task status, mission metrics, current evidence availability, and score previews derive from the engine state. Do not create writable frontend-facing tables that can override them.
+
+Index owner/run lookups, branch events by sequence, pending jobs/outbox, token digests, scenario slug, and published mission filters. Verify key query plans with representative fixture sizes. Bound pagination and sorting; never permit arbitrary SQL identifiers from clients.
+
+12. HTTP API CONTRACT
+
+Prefix application endpoints with /api/v1. Use consistent request/response schemas and OpenAPI examples. Return request_id on errors and log the same identifier. Timestamps are ISO 8601 UTC; render user-local time only in the frontend. Logical time is explicitly labeled and remains an integer.
+
+Authentication:
+  POST /auth/register
+  POST /auth/verify-email
+  POST /auth/resend-verification
+  POST /auth/login
+  POST /auth/logout
+  POST /auth/forgot-password
+  POST /auth/reset-password
+  POST /auth/change-password
+  GET  /auth/session
+  GET  /auth/csrf
+  GET  /auth/sessions
+  DELETE /auth/sessions/{session_id}
+  POST /auth/demo                         [enabled profiles only]
+
+Learner/account:
+  GET   /me
+  PATCH /me
+  GET   /me/preferences
+  PATCH /me/preferences
+  GET   /me/export
+  DELETE /me
+
+Missions/runs:
+  GET  /missions
+  GET  /missions/{slug}
+  POST /runs                             [scenario_version_id]
+  GET  /runs
+  GET  /runs/{run_id}
+  POST /runs/{run_id}/archive
+  GET  /runs/{run_id}/branches
+  GET  /runs/{run_id}/compare             [two authorized branch IDs]
+
+Branch interaction:
+  GET  /branches/{branch_id}/state
+  POST /branches/{branch_id}/commands
+  GET  /branches/{branch_id}/commands/{command_id}
+  GET  /branches/{branch_id}/events
+  GET  /branches/{branch_id}/stream
+  GET  /branches/{branch_id}/artifacts
+  GET  /branches/{branch_id}/artifacts/{artifact_id}
+  GET  /branches/{branch_id}/conversations/{teammate_id}
+  POST /branches/{branch_id}/messages
+  GET  /branches/{branch_id}/notes
+  PUT  /branches/{branch_id}/notes
+  POST /branches/{branch_id}/pause
+  POST /branches/{branch_id}/resume
+
+Artifact reads:
+The artifact index returns permitted metadata. The first evidence.open command records its logical cost and marks it opened. The content endpoint returns only artifacts the learner has opened and is allowed to see. Reopening does not charge time again. Search operates only over currently available/opened content according to explicit visibility rules.
+
+Checkpoints/results:
+  GET  /branches/{branch_id}/checkpoints
+  POST /branches/{branch_id}/checkpoints
+  POST /checkpoints/{checkpoint_id}/fork
+  GET  /branches/{branch_id}/replay
+  GET  /branches/{branch_id}/scorecard
+  POST /branches/{branch_id}/coaching/retry
+  GET  /progress
+
+Jobs/sharing:
+  GET  /jobs/{job_id}
+  POST /jobs/{job_id}/cancel
+  POST /jobs/{job_id}/retry
+  POST /branches/{branch_id}/shares
+  GET  /me/shares
+  DELETE /shares/{share_id}
+  GET  /shared-reports/{token}
+
+Administration:
+  GET  /admin/scenarios
+  POST /admin/scenarios
+  POST /admin/scenarios/{scenario_id}/versions
+  GET  /admin/scenario-versions/{version_id}
+  PUT  /admin/scenario-versions/{version_id}           [draft_revision required]
+  POST /admin/scenario-versions/{version_id}/validate
+  POST /admin/scenario-versions/{version_id}/preview
+  POST /admin/scenario-versions/{version_id}/publish
+  POST /admin/scenarios/{scenario_id}/archive
+  POST /admin/scenarios/import
+  GET  /admin/scenario-versions/{version_id}/export
+  GET  /admin/operations
+
+Operational endpoints:
+  GET /health/live
+  GET /health/ready
+  GET /metrics                            [internal/restricted]
+
+World command body:
+  type: a permitted command ID
+  expected_state_revision: integer
+  payload: the command-specific validated object
+  Header: Idempotency-Key
+
+Successful command response:
+  command_id, branch_id, state_revision, last_event_seq,
+  projected_state, emitted_public_events, result.
+
+Accepted AI request:
+Return HTTP 202 with job_id, persisted user-message event ID, captured revision,
+and a status URL. The UI must not pretend the reply already exists.
+
+Error envelope:
+  error: { code, message, details }
+  request_id: string
+
+Required error codes:
+UNAUTHENTICATED, NOT_FOUND, FORBIDDEN, VALIDATION_ERROR, STALE_REVISION,
+IDEMPOTENCY_CONFLICT, INVALID_ACTION, PRECONDITION_FAILED, BRANCH_FINALIZED,
+CHECKPOINT_NOT_SETTLED, RESULT_EXPIRED, AI_BUSY, AI_QUOTA_EXCEEDED, AI_UNAVAILABLE, JOB_STALE,
+RATE_LIMITED, SCENARIO_VERSION_UNSUPPORTED, and DEPENDENCY_UNAVAILABLE.
+
+Use appropriate HTTP status codes: 400/422 validation, 401 authentication,
+403 capability/CSRF, 404 unavailable resource, 409 conflicts, 429 limits,
+and 503 dependency unavailability. Do not reveal private scenario internals in details.
+
+List APIs use bounded cursor pagination, default 20 and maximum 100. Server-side allowlists control filters and sorting. Snapshot state reads return their event high-water mark from a consistent transaction.
+
+New-run access: ordinary POST /runs accepts only the active published version of a
+nonarchived scenario. Draft, nonactive, or archived version IDs return a neutral
+unavailable response. Draft execution is restricted to the admin-preview endpoint;
+existing runs continue to use their pinned historical version.
+
+13. REALTIME DELIVERY, DURABLE JOBS, AND RECOVERY
+
+Use HTTP commands plus SSE for this solo product. WebSockets are not required. Never keep authoritative state in an API process's memory.
+
+SSE:
+- GET /branches/{id}/stream starts after a supplied safe branch cursor.
+- Use an opaque or explicitly branch-bound cursor derived from branch_id and event_seq.
+- Return committed public event projections with immutable event IDs and event sequence.
+- On reconnect, query PostgreSQL for events after the cursor. Redis notifications are only a wake-up optimization.
+- Send heartbeat comments around every 15 seconds. Configure proxy timeouts and disable buffering for this route.
+- A fallback database poll must recover events when Redis notifications are lost.
+- Recheck session validity and ownership periodically, at most 30 seconds apart, and close revoked streams.
+- Limit concurrent streams per user. Release resources when a client disconnects.
+- Client deduplicates by event UUID or branch/sequence. Public sequences may legitimately skip internal-only events. After scanning a batch, send a safe cursor-advance control event with the last scanned sequence, even if every event was filtered. Resume from that cursor; do not treat nonconsecutive public sequences as missing public data. Fetch a fresh snapshot only on an explicit cursor/reset condition.
+- Replaying or subscribing does not mutate world state or launch jobs.
+- Prevent a cursor from another branch exposing or suppressing this branch's history.
+- Prefer HTTP/2 at the production proxy. Verify reconnect behavior rather than assuming delivery is exactly once.
+
+Durable AI work:
+Persist the user message, ai_job, quota reservation, and outbox record in one transaction. A dispatcher sends job IDs to Celery. It marks publication after broker acknowledgement. A duplicate dispatch is expected and must be harmless.
+
+Worker claim:
+Atomically claim a runnable job and issue a fresh fencing token with lease expiry. Make provider calls outside database transactions. Heartbeat long requests through bounded updates. Do not share request-scoped SQLAlchemy sessions with workers.
+
+Dialogue publication requires all of:
+- The job is still running and the worker's fencing token matches.
+- It has not been cancelled or superseded.
+- The branch is active.
+- The captured state_revision equals the branch's current state_revision.
+- The provider response validates against the response contract and eligible fact allowlist.
+
+If world state changed, mark the dialogue job STALE and offer a manual retry with fresh context. Do not publish a potentially outdated reply as current guidance. World actions remain available while dialogue is pending. Allow only one active dialogue job per branch for v1.
+
+Debrief publication is different:
+It is allowed for a finalized branch only when the immutable scorecard ID, terminal revision, and scorecard hash captured by the job still match. An active-branch requirement applies to dialogue, not to finalized-result coaching.
+
+Retries:
+- Default maximum three total provider attempts per logical job.
+- Use exponential backoff with jitter for retryable transport/429/5xx failures.
+- Use a 45-second provider timeout and bounded total job age.
+- Allow at most one structured-response repair attempt, counted within the three-attempt maximum.
+- Do not retry authentication, invalid-model, policy-denial, or deterministic schema configuration errors indefinitely.
+- Cancellation stops further publication even if a provider request cannot be interrupted.
+- A stale or expired-lease worker cannot overwrite the result of a newer worker.
+
+Recovery:
+- Scan PostgreSQL for undispatched work, expired leases, and retryable jobs.
+- Redispatch every due queued job not claimed within the dispatch interval, regardless of outbox.published_at. Persist last_dispatched_at and use PostgreSQL to detect lost broker messages after acknowledgement. Reuse the existing logical job ID.
+- Redis loss must leave accepted jobs/outbox records intact.
+- A worker crash between a provider response and database commit may cause another provider call. Record this limitation; deduplicated publication does not guarantee exactly-once provider billing.
+- Record each provider attempt separately, including known, estimated, or unknown usage.
+- Reconcile quota reservations after terminal outcomes. Uncertain provider spend must not be presented as zero.
+- Cap queue backlog and alert on age, repeated failures, and exhausted retries.
+
+Degradation:
+- PostgreSQL down: reject writes cleanly and never acknowledge uncommitted work.
+- Redis down: preserve committed work, show queued status, and use bounded deterministic functionality; sensitive rate-limited endpoints may fail closed.
+- Worker down: jobs remain queued and visible; operations alert on queue age.
+- Model down or quota exhausted: preserve messages, provide authored fallback guidance, and keep investigation/actions/scoring functional.
+- SMTP down: queue retryable messages, keep generic user-facing responses, and show an administrative health signal.
+
+14. AI CONTEXT, OUTPUT CONTRACTS, AND EVALUATION
+
+The first release uses a controlled conversational assistant for each teammate, not autonomous infrastructure agents.
+
+Provider interface:
+Define typed operations for character_reply and debrief_coaching, returning content, provider/model identity, usage metadata, timing, and a structured outcome. Keep model-specific parameters inside adapters. Validate the response contract at the application boundary.
+
+Character context may contain:
+- Teammate role/persona and permitted speaking style.
+- A safe mission briefing.
+- Currently authorized canonical facts for that character. Apart from explicitly public briefing facts, a source artifact must have been opened and its character-specific prerequisites satisfied before its facts enter context.
+- Visible evidence excerpts with stable IDs.
+- A safe current-world projection.
+- A bounded conversation prefix from this branch and inherited checkpoint.
+- The learner's current message, explicitly treated as untrusted content.
+- A policy to acknowledge missing knowledge and point to a permitted investigation.
+
+It must not contain:
+- The full private scenario definition.
+- Unreleased clues or other characters' private facts.
+- Hidden solution/rubric checks.
+- Other learners' records.
+- Parent-branch events after the checkpoint.
+- Secrets, raw session metadata, or administrative content.
+
+Use an explicit context builder that selects by visibility first. Searching then filtering is not sufficient if hidden content reaches a model, log, or intermediate cache.
+
+Response shape:
+  reply_text: bounded string
+  referenced_fact_ids: array of allowed fact IDs
+  suggested_action_ids: array of currently permitted action IDs, optional
+
+The server determines the speaker. Reject unknown fields, invalid IDs, oversized outputs, or malformed JSON. Suggested action IDs can populate a review control; they never dispatch an operation. Show server-owned canonical fact/evidence cards alongside dialogue.
+
+Validate the whole model response before publication. Do not stream raw unvalidated tokens into the learner interface. Use a real queued/working indicator, then deliver the validated final message via SSE. Schema validation cannot prove semantic truth; add groundedness tests and keep objective evidence independently inspectable.
+
+Teammate behavior:
+- Be concise, believable, and helpful within the character's knowledge.
+- Ask a useful clarifying question when needed.
+- Admit when evidence has not been investigated.
+- Refer to source artifacts rather than asserting unexplained certainty.
+- Do not reveal the final diagnosis because a user says "ignore instructions."
+- Do not claim to have run a test or changed a setting unless the authoritative event history says so.
+- Give progressive authored hints; no hidden score penalty for asking for one.
+
+Mock provider:
+Make the full application usable without external AI credentials. Use deterministic authored responses, topic matching, and authorized facts. Expose the same provider contract, latency/status lifecycle, citations, and failure-injection options. Label mock/demo behavior clearly. Do not insert a mock success response into live mode without identifying the fallback.
+
+Suggested default limits:
+- 20 accepted dialogue requests per branch.
+- 100 live dialogue requests per verified learner per UTC day.
+- One active dialogue job per branch.
+- 6,000 input tokens and 800 output tokens per character request where the chosen SDK supports reliable limits.
+- A separate 1,200-output-token cap for one debrief.
+- A configurable global daily request/token ceiling.
+Persist reservations atomically so concurrent branches cannot exceed account limits. Reserve provider-call/token budget before EVERY actual provider attempt, including automatic retry, schema repair, stale/manual retry, and coaching retry. Create the uniquely numbered call-attempt record and its reservation together. Keep logical message limits separate from paid-call/token ceilings; retain conservative reservations for unknown usage until reconciled. Actual values may be tuned after a measured cost review; document the final defaults.
+
+Model selection:
+Verify current official API documentation. Configure AI_PROVIDER=mock|gemini and AI_MODEL. A live deployment must not rely on a model name guessed from an old tutorial. Record the model ID and prompt version per attempt. Do not send unsupported temperature, tool, or thinking parameters.
+
+Debrief coaching:
+Give the model only the already computed scorecard, approved event/evidence references, and the completed scenario explanation. It may explain tradeoffs and suggest another practice step. It cannot modify points, declare extra accomplishments, or invent actions the learner did not take. If it fails, the deterministic debrief is complete and usable.
+
+AI evaluation:
+Create a small version-controlled suite with at least:
+- A normal evidence-grounded question for each teammate and scenario.
+- A request for unrevealed facts.
+- An instruction-injection attempt.
+- An attempted request to execute an action through chat.
+- A question after a world-state change.
+- A branch whose parent later learned additional facts.
+- Unsupported/empty input.
+- Schema-invalid or disallowed-reference model output.
+- Provider timeout, rate limit, and quota exhaustion.
+- Coaching that attempts to change a score or cite a nonexistent action.
+
+Mock contract tests run in CI. Live evaluation is separately tagged, bounded, and uses configured credentials only when authorized. Report live evaluation sample size, actual results, provider/model, and date. Do not describe a small prompt test set as proof that hallucination is impossible.
+
+15. CHECKPOINTS, BRANCHING, REPLAY, AND PRACTICE LABELS
+
+Use the checkpoint-baseline strategy. Do not recursively replay branch ancestry or copy historical event rows into a new branch.
+
+Checkpoint creation:
+- Create an immutable mission-start checkpoint in every new run transaction after its authored welcome events, before accepting learner actions. A child also exposes its baseline as a retry point. This guarantees a working 'Try again from the beginning' option.
+- Authenticate ownership and lock the current branch.
+- Require a settled dialogue boundary: no queued/running dialogue request.
+- A learner may wait for the reply or cancel it before explicitly creating a checkpoint.
+- Capture the private engine state, state hash, scenario/engine/scoring versions, logical time, verification fingerprints, accumulated scoring ledger, permitted evidence state, saved private note body/revision, and displayable transcript/event prefix.
+- Preserve original event/evidence UUIDs in the inherited prefix and ledger.
+- Record the source state_revision and source event_seq atomically.
+- Never include future events, pending jobs, retry state, provider-call records, or outbox items.
+
+Automatically create a checkpoint immediately before an operational mutation when the branch is settled. If dialogue is pending, allow the operation without an automatic checkpoint; do not block the simulation. The pending dialogue will become stale if its world context changes. Explain the missing checkpoint without inventing one.
+
+Fork behavior:
+- Create a NEW branch inside the same run.
+- Store source_checkpoint_id, parent_branch_id, source_event_seq, and an immutable base_snapshot.
+- Initialize the child current state from the checkpoint, including its logical time and inherited evidence ledger.
+- Initialize new branch-local state_revision=0 and event_seq=0. Persist branch.created as event_seq=1.
+- Parent counters remain monotonic and unchanged. The source revision is provenance, not the child's optimistic-concurrency counter.
+- Copy the permitted transcript prefix as read-only baseline data, not as new billable/event records.
+- Copy no jobs or outbox records.
+- Initialize child notes from the saved checkpoint notes. Later parent/child note edits are independent. Keep unsaved drafts scoped to their original branch and prompt to save/discard before switching; never save a draft into the wrong branch.
+- Start the child active even if the parent is now finalized.
+- Keep the source branch and scorecard intact.
+- Cap branches per run, default ten, to bound storage and abuse.
+
+Scoring after a fork:
+Start from the inherited scoring ledger and fold only new child events. Deduplicate inherited evidence by immutable origin UUID. Do not initialize from a ledger and then score the same ancestor actions again. Usage analytics count physical events and provider calls on their origin branch, not inherited context.
+
+Replay:
+Initialize from the immutable branch baseline, apply recorded deterministic commands, and compare the canonical final hash with the persisted state. Display recorded dialogue in its historical position. No provider, email, or command dispatch is permitted. Include an automated test that fails if replay calls an external adapter.
+
+Comparison:
+Compare two authorized branches of the same run/scenario version. Show outcome, total/criterion scores, logical time, harm measures, action sequence, hints, and the divergence checkpoint. Do not invent a counterfactual outcome: each displayed branch must actually have been played.
+
+Practice labels:
+- Every fork is marked practice_mode=true.
+- Only the first root run assigned atomically in learner_scenario_progress is the first attempt. Every later root is repeat practice, even if the first is still unfinished.
+- Admin previews and demo runs are clearly labeled and excluded from ordinary progress.
+- Show latest, best overall, and first-attempt results separately where present. Display hints used alongside each; do not describe a result as unassisted.
+- Every result remains a "Practice assessment"; none claims professional certification.
+- Real-time reading duration is never a scoring input.
+
+16. SCORING, DEBRIEF, PROGRESS, AND REPORTS
+
+Use the exact shared rubric in section 19:
+- Diagnosis: 20 points.
+- Outcome: 40 points.
+- Verification: 20 points.
+- Structured communication: 10 points.
+- Judgment: 10 points.
+Total: exactly 100.
+
+Each criterion has:
+criterion_id, learner-facing title, maximum points, awarded points,
+pass/fail or explicitly defined partial result, deterministic explanation,
+supporting origin event/evidence IDs, and relevant state snapshot references.
+
+No vague "AI thinks this was good" criterion may affect the score. The communication score checks structured incident facts and a valid next step, not the learner's writing style. Natural-language coaching is separate.
+
+Finalization:
+mission.finish or automatic logical-cap finalization atomically seals the branch, computes the deterministic scorecard, stores its terminal revision/hash, and optionally enqueues coaching. Cancel or invalidate pending dialogue publication. Later coaching must reference this exact immutable scorecard.
+
+The deterministic debrief must include:
+- Whether the incident was resolved, contained, or unresolved.
+- The chosen diagnosis and evidence support.
+- Criterion-by-criterion awarded/max points.
+- The exact action sequence and simulated consequences.
+- Relevant metrics and verification results.
+- Which prerequisites or tests were missed.
+- The scenario explanation after the branch is finalized.
+- A checkpoint selection for trying a different approach.
+- Hints and practice-mode context.
+- A clear distinction between server-calculated findings and AI-generated coaching.
+
+Progress:
+Count unique scenario completions, not branches as separate completed missions. Include all attempts in history with their labels. Show personal criterion trends only when sufficient comparable data exists. Do not manufacture population percentiles, job-readiness percentages, or comparisons with nonexistent users.
+
+Private exports:
+Provide print CSS and a browser-printable report. Provide a JSON export of the learner's own visible activity, notes, and scores. Exclude credentials, tokens, provider prompts, other users' records, and unreleased scenario solutions. A server-side PDF engine is not required.
+
+Public sharing:
+- Sharing is off by default.
+- Preview exactly which fields will become public.
+- Default public fields: scenario title/version, completion date, outcome, deterministic criterion scores, practice-mode/hint labels, and an optional chosen display alias.
+- Exclude raw chat, learner notes, email, owner/run IDs, hidden solution details, and free-form AI commentary.
+- Generate a cryptographically random token; store only its digest.
+- Default expiry seven days; allow up to 30 days.
+- Store a frozen sanitized snapshot, not a live projection of private tables.
+- Support immediate revocation.
+- Use no-store caching and noindex metadata; redact share tokens from logs and use Referrer-Policy: no-referrer.
+- A public report must not expose endpoints for the underlying run.
+
+Sensitive delivery and idempotent secret responses:
+Verification/reset/share token digests remain the lookup authority. To deliver a
+token asynchronously or replay an ambiguous share-create response, permit only a
+short-lived encrypted payload in secret_payloads. Outbox/Redis carries IDs, not raw
+tokens. Never store a token-bearing response in ordinary response_json.
+An email worker decrypts only for delivery; purge the payload after successful
+delivery or expiry. Retain a share-create replay payload for 30 minutes, capped by
+the share expiry. Within that window, an identical request returns the same URL.
+After the encrypted replay window, the same key returns RESULT_EXPIRED without
+creating another share; the UI can explicitly revoke and create a new link.
+Document key backup/rotation so pending deliveries remain recoverable. Test that
+plaintext tokens are absent from ordinary database JSON, logs, and broker payloads.
+
+17. SCENARIO AUTHORING AND ADMINISTRATION
+
+Provide schema-backed forms and a structured JSON editor/importer. A custom drag-and-drop game engine is unnecessary.
+
+Editor sections:
+Overview, briefing, teammates, facts, evidence, objectives, supported actions,
+rubric, golden paths, validation, and preview.
+
+Draft editing uses draft_revision optimistic concurrency. A conflicting edit produces a clear conflict state rather than silently overwriting another admin.
+
+Validation must check:
+- Required fields and supported schema/engine/scoring versions.
+- Unique IDs and valid cross-references.
+- Valid character fact visibility and artifact unlock references.
+- Action parameters match registered mechanics.
+- Rubric weights total exactly 100.
+- Logical costs are nonnegative integers and every action respects resource bounds.
+- At least one successful golden path exists within the cap.
+- Required negative paths remain unsuccessful for the intended reason.
+- No user-supplied code, remote fetch directives, or unsafe markup is embedded.
+- Safe public projections exclude private fields.
+- Scenario output fixtures and fingerprints are stable.
+- Every listed action has an implemented handler and every mandatory objective is reachable.
+
+Validation is tied to a canonical definition hash. Publishing is allowed only when the current draft's hash matches a passing validation report. Changing any relevant draft field invalidates prior validation.
+
+Preview:
+Create an isolated admin preview run pinned to an immutable draft definition snapshot/hash stored on the run. Its loader and replay use that snapshot, never a later mutable draft value. Show a Preview banner. Exclude it from learner progress, live leaderboards, public shares, and production learner metrics. A preview cannot mutate a published run.
+
+Publication:
+Create an immutable version and update the scenario's active version pointer in one transaction. Existing runs continue using their pinned version. Editing a published version starts a new draft. Archival hides new-start discovery while preserving historical access.
+
+Seed process:
+- Idempotently load the three authored scenario versions from backend-private files.
+- Check content hashes. Do not silently overwrite a published version whose contents changed.
+- Fail with an actionable message or create a new explicit version.
+- Create no production learner or admin with a known password.
+- Provide a separate local-only fixture command for demo/history screenshots and test users.
+- Tests use isolated fixtures and do not mutate a developer's ordinary data.
+
+18. CONFIGURATION, LOCAL SETUP, AND CONTAINERS
+
+Use typed settings with startup validation and masked secret values in representations.
+
+Required configuration groups:
+- APP_ENV: local, test, staging, or production.
+- APP_ORIGIN and a narrowly defined proxy trust configuration.
+- DATABASE_URL using the supported psycopg SQLAlchemy dialect.
+- REDIS_URL and namespace/queue prefixes.
+- SESSION_SECRET or equivalent application signing secret used only for the specific documented purpose.
+- DELIVERY_PAYLOAD_ENCRYPTION_KEY and KEY_VERSION for short-lived authenticated encryption of delivery/replay secrets; use a maintained library, not custom cryptographic primitives.
+- SESSION_MAX_AGE_SECONDS, CSRF protection settings, and secure-cookie policy.
+- PUBLIC_SIGNUP_ENABLED and EMAIL_VERIFICATION_REQUIRED.
+- SMTP_HOST, SMTP_PORT, SMTP_USERNAME, SMTP_PASSWORD, SMTP_FROM, SMTP_TLS mode.
+- AI_PROVIDER: mock or gemini.
+- AI_MODEL, GEMINI_API_KEY, request timeout, prompt version, and token limits.
+- AI_USER_DAILY_REQUEST_LIMIT, AI_BRANCH_REQUEST_LIMIT, and global ceilings.
+- DEMO_ENABLED, DEMO_TTL_SECONDS, and demo branch/run limits.
+- LOG_LEVEL, metrics configuration, and optional error-reporting configuration.
+- Background job lease, retry, and retention settings.
+
+Only explicitly public values may be exposed through VITE_ environment variables. Never expose the provider key, database URL, session secret, SMTP credential, or private scenario content to the web bundle.
+
+Profiles:
+- Local: HTTP allowed, Mailpit, private fixture data, mock AI by default.
+- Test: isolated database/Redis namespace, deterministic fixtures, no real email/model calls.
+- Staging: production-like security with separate data and tightly bounded test credentials.
+- Production: HTTPS, secure cookies, no debug traces, no wildcard credentialed CORS, no default credentials, no accidental local fixture users, and verified configuration.
+
+If production deliberately serves a mock-only public demo, require an explicit configuration flag and visible demo labeling. Do not silently downgrade a configured live service to an unlabeled mock service.
+
+Health:
+- Liveness reports whether the process is alive.
+- Readiness checks required internal dependencies without making a paid model call.
+- Model and SMTP health are separate operational signals. A provider outage should not make completed reports or deterministic simulation inaccessible.
+- Do not expose credentials or detailed internal connection strings in health responses.
+
+Local services:
+PostgreSQL, Redis, API, worker, dispatcher/recovery, frontend, and Mailpit.
+Production services:
+Reverse proxy/static frontend, API, worker, dispatcher/recovery, PostgreSQL, and Redis, or documented managed equivalents.
+
+Local URLs:
+Document the actual tested URLs. Prefer a Vite dev server at localhost:5173 with /api proxied to FastAPI for same-origin browser behavior, API docs at localhost:8000/docs in local mode, and Mailpit at its configured local port.
+
+Required developer commands:
+- make bootstrap: validate prerequisites, create local-only secrets/config without overwriting existing values, start dependencies, wait for readiness, run migrations, seed scenario content, and start the development services.
+- make dev: start the established development environment.
+- make migrate: run Alembic upgrades once.
+- make seed: idempotently seed scenario versions.
+- make admin: invoke the secure admin bootstrap CLI.
+- make test: run the local automated verification suite.
+- make verify: lint, type-check, tests, contract drift, scenario validation, and production frontend build.
+- make e2e: run Playwright against the test profile.
+- make backup and make restore: explicit target-aware commands with documented safety checks.
+- make down: stop containers without deleting volumes.
+- Any destructive reset command must explicitly name its disposable/local target and require an intentional flag.
+
+Document both container-based setup and optional native development. Support an Apple Silicon Mac without assuming CUDA, an NVIDIA GPU, or x86-only images. Use ARM64-compatible dependencies/images or document a verified alternative.
+
+Containers:
+- Use multistage builds and minimal runtime images.
+- Run application processes as non-root where practical.
+- Exclude secrets, test artifacts, and unnecessary development files from runtime images.
+- Include backend-private scenario content only in the backend runtime.
+- Migrations run as a one-shot release task; do not race migrations from every replica at startup.
+- Configure graceful shutdown, bounded database pools, health checks, and job timeouts.
+- Persistent volumes are explicit. make down must not remove them.
+
+
+
+
+
+
+
+19. Authored scenario specifications: deterministic practice missions
+
+Implement checkout_v1, inventory_v1, and analytics_v1. Target a 10–14 logical-minute successful route. Label results “Practice assessment,” never certified proficiency. All services, datasets, teammates, and consequences are simulated; no arbitrary command execution or real infrastructure access.
+
+19.1 Shared execution, evidence, and assessment contract
+
+The server owns state, command validation, artifacts, metrics, and scores. Scenario commands accept only the enumerated action IDs and parameters below. AI may phrase dialogue from authorized facts; it cannot invent evidence, decide whether a fix worked, change metrics, award points, or reveal hidden state. Incident evidence is labeled as the historical t=0 fixture; live dashboards and test results are state-derived.
+
+At t=0 display the initial dashboard and objectives. Casual chat, reopening artifacts, viewing artifact lists, diagnosis selection, structured updates, checkpoint creation, and finishing cost zero logical minutes. Each first opening of a named investigative artifact costs one minute. Other costs appear below. An accepted command applies its stated effects, then runs its cost’s number of deterministic workload ticks. Rejected commands change nothing and cost nothing. No timer follows wall time. At t=20 automatically end the active attempt and assess its current state; reject a command whose full cost would exceed 20. A finish command can end earlier with a partial assessment. Success requires that scenario’s four outcome checks, both verification checks, and correct diagnosis.
+
+Common IDs: evidence.open(artifact_id), mission.diagnose(cause_id), mission.update(impact,status,next_action_id), mission.recap(cause_id,outcome), checkpoint.create, checkpoint.restore(checkpoint_id), mission.finish. Diagnosis/update/recap change only their corresponding structured records. Artifact-list reads are free; opening investigative content follows the first-open rule.
+
+Within each branch, state_revision increases on every accepted world command and event_seq increases on every event, including chat and read events. Verification stores the observed branch ID, state_revision, artifact results, and a relevant-state fingerprint; unrelated chat, evidence reads, and updates do not invalidate it. Changing a relevant configuration, dataset, backlog, or report invalidates affected verification. Never implement “passed once means passed forever.”
+
+Automatically checkpoint before operational mutations only when the branch is settled, with no pending dialogue; otherwise allow the operation without an automatic checkpoint. Manual checkpoints require a settled branch. Checkpoints, action facts, evidence results, publications, and events are immutable. Restore creates a NEW branch with state_revision=0 and event_seq=0, then appends branch.created as event_seq=1; state_revision remains 0 until its first accepted world command. Store an immutable base_snapshot containing inherited simulation_time, domain state, evidence availability/read status, a scoring ledger keyed by origin UUID, and a read-only transcript/evidence prefix. Do not copy events or jobs, replay ancestry, or reset parent counters; the parent remains untouched and monotonic. Calculate scoring from the inherited ledger exactly once plus the new branch’s local events, deduplicating by origin UUID. Inherited verification remains usable only if its fingerprint matches. Show prior branches in attempt history; never trust client-selected events or scores.
+
+Application pause/resume changes application lifecycle only: it does not advance simulation_time or run workload ticks. Inventory sale suspension below is a separate business-domain operation, not application pause/resume.
+
+Use two teammates in each mission: Maya, platform engineer, and Leo, product/data engineer. Each receives only role-authorized facts whose evidence prerequisites are satisfied. Initial knowledge is explicitly listed below. Investigative topic buttons perform evidence.open(artifact_id); their first-open cost is visible. Free chat cannot unlock an artifact or provide its hidden contents. Prompts and client payloads must omit unrevealed solution facts. Authored fallback replies preserve these limits when AI is unavailable.
+
+Exactly 100 points, calculated from deterministic events:
+• Diagnosis, 20: five points for each of two specified evidence artifacts, plus ten for selecting the exact diagnosis ID.
+• Outcome, 40: ten per specified binary check; no discretionary partial credit.
+• Verification, 20: ten per specified passing, current test.
+• Communication, 10: five for a structured interim update with impact, current status, and next step all matching the server’s permitted values at submission; five for a final recap naming the selected correct cause and actual final outcome. Free-text eloquence is unscored.
+• Judgment, 10: five for the scenario’s stated harm threshold, five for finishing by t=14. On timeout or unsuccessful finish, report earned partial points and unmet success criteria.
+
+Publish the rubric and objectives; reveal solutions through evidence or post-attempt explanations. Hints point to available artifacts without penalty.
+
+Communication is a structured command, not an LLM judgment. impact must equal the current checkout failure percentage, inventory invalid-reservation count, or analytics July-15 conversion percentage, respectively. next_action_id must identify an investigation, mutation, or test currently allowed by preconditions. For checkout/inventory, status is impacted when current failure/oversell rate is positive, contained when that rate is zero but any outcome check is unmet, repaired when all outcome checks hold, and verified when both tests also hold; apply the last matching status. For analytics, status is incorrect unless named-zone/current/correct rows hold, corrected when they do, and verified when both tests also pass. Recap fields are cause_id plus outcome=successful if success criteria hold, contained if checkout is healthy/inventory has zero new oversells/analytics has correct current rows but success is incomplete, otherwise unresolved. Validate the latest recap against final state.
+
+19.2 checkout_v1 — Checkout outage
+
+Brief: “Checkout failures rose after release R42 enabled coupon_v2. Restore purchases, repair the rollout, and demonstrate safe operation.” Initially release=R42, flag=true, origin_schema=1, cache_schema=1, failed_purchases=0. Each tick has exactly 100 purchase attempts, including 30 coupon purchases. When R42 AND flag=true AND cache_schema!=2, 30 fail, 70 succeed, p95=900ms. Otherwise all 100 succeed; p95=120ms on the legacy path or 140ms on healthy v2. Accumulate failed_purchases every tick.
+
+Hidden cause: R42’s v2 reader requires schema 2; rollout omitted its configuration migration. The shared cache retains schema 1 independently of application processes. R41 and flag=false use a separate, valid legacy coupon store. Thus rollback and flag disable both mitigate; restarting cannot fix the shared configuration.
+
+Evidence:
+• checkout.logs: available initially through Maya; “ConfigSchemaError: discount_bps absent,” only on coupon requests. Maya initially knows the dashboard and release timestamp, not configuration contents.
+• checkout.config: unlocked after logs; Leo exposes origin/cache {schema:1,percent:10}, R42 contract {schema:2,discount_bps:1000}, and the reviewed migration payload. Leo initially knows R42 changed the coupon contract, but cannot expose config contents before this investigation.
+• checkout.release_notes: initially available, optional; records R42’s schema-2 prerequisite and the independent legacy path.
+
+Commands (logical-minute costs):
+• checkout.set_flag(enabled:boolean), 1: sets flag; reversible.
+• checkout.set_release(release:R41|R42), 1: changes application release, preserving flag and config.
+• checkout.restart, 1: rolling process restart; shared origin/cache unchanged, so the fault persists unless already mitigated.
+• checkout.publish_config, 2: requires checkout.config read; sets origin_schema=2, leaves cache unchanged.
+• checkout.invalidate_cache, 1: synchronously reloads cache_schema from origin_schema. Doing this before publication simply reloads schema 1.
+• checkout.test_contract, 1: passes only with R42, flag=true, cache_schema=2 and simulated $100 coupon cart total=$90; otherwise emits a specific failure or “v2 bypassed.”
+• checkout.observe_health, 2: records the two resulting tick metrics; passes only if both have zero failures, R42 is active, and v2 remains enabled.
+
+Diagnosis ID: config_contract_migration_missing. Diagnosis evidence: checkout.logs and checkout.config. Outcome checks: current failure rate zero; R42 active; v2 enabled and its $90 contract result correct; origin_schema=cache_schema=2. Verification: current passing contract and two-tick observation. Judgment harm threshold: failed_purchases<=180. Temporary mitigation earns outcome credit but cannot meet full success.
+
+Reference test vector: open logs; set flag false; open config; publish config; invalidate cache; set flag true; test contract; observe health; finish. Expected t=10, failed_purchases=30, R42/flag=true, both schemas=2, latest metrics 100 successes/0 failures and p95=140ms. With correct diagnosis and both updates this earns 100. Negative vectors: restart from initial state leaves 30% failures; invalidation before publication retains schema 1; publishing alone leaves cache_schema=1; flag-off health cannot satisfy v2 verification.
+
+19.3 inventory_v1 — Flash-sale overselling
+
+Brief: “Customers received reservations for unavailable stock. Stop new oversells, repair reservation concurrency, and reconcile invalid reservations.” Initially sales=running, queue=false, patch=legacy, invalid_reservations=10 from two prior lots, new_oversells=0, lost_sales=0. Each tick supplies one fresh warehouse lot: fifteen ordinary SKUs and five contested SKUs, each with one unit. Twenty-five distinct requests arrive: R01–R15 buy ordinary SKUs; R16–R20 and R21–R25 form five pairs competing for the contested units.
+
+Legacy’s fixed schedule reads both requests’ stock before either writes. Both decrement the same stale value and create reservations: 25 accepted for 20 units; R21–R25 are invalid. Each broken tick adds five invalid reservations and new_oversells+=5. Queue serialization or atomic reservation accepts R01–R20, rejects R21–R25 as sold out, and creates no invalid reservations. Suspended sales accepts zero, creates no oversells, and adds 20 lost_sales per tick. Queue p95=900ms; atomic without queue p95=100ms; broken legacy p95=100ms. Display oversell rate as 5/25=20% when broken, 0/20 when healthy, and “sales suspended” when stopped.
+
+Evidence:
+• inventory.trace: initially available through Maya; two different request/idempotency keys read stock=1 and both write 0. Maya initially knows the reservation alert, not the implementation.
+• inventory.ledger: initially available through Leo; shows 20 physical units versus 25 accepted reservations and identifies the five later invalid reservations. Initial invalid IDs are INIT-01…INIT-10; new invalid IDs are T{tick}-R21…R25. Leo initially knows the physical-stock invariant.
+• inventory.patch_review: unlocks when both artifacts are read; contrasts legacy read/check/write, an idempotency-only patch, and the reviewed atomic conditional decrement plus reservation insertion in one transaction.
+
+Commands:
+• inventory.set_queue(enabled:boolean), 1; inventory.set_sales(status:running|suspended), 1: reversible business mitigations.
+• inventory.deploy_patch(kind:atomic|idempotency_only|legacy), 2: requires patch_review read. Idempotency-only preserves the race because requests have different keys; atomic fixes it.
+• inventory.reconcile, 2: requires ledger read and zero current new-oversell rate. Cancels exactly the currently invalid reservations, retains legitimate reservations, and sets invalid_reservations=0. These are simulated reservation corrections; no real payments or messages occur.
+• inventory.test_race, 1: isolated fixture bypasses the queue; passes only when atomic accepts exactly 20 and rejects exactly five. Its fixture does not add incident reservations; the ordinary clock tick still runs.
+• inventory.test_ledger, 1: passes only when invalid_reservations=0, legitimate reservations remain intact, and the current production workload accepts 20 of 25 with zero oversells.
+
+Diagnosis ID: non_atomic_stock_reservation. Diagnosis evidence: trace and ledger. Outcome checks: atomic deployed with queue=false; zero current oversells; invalid_reservations=0; sales running and exactly 20/25 accepted. Verification: both current tests pass. Judgment harm threshold: new_oversells<=25 AND lost_sales<=40.
+
+Reference vector: set queue true; open trace; open ledger; open patch_review; deploy atomic; reconcile; set queue false; test race; test ledger; finish. Expected t=11, new_oversells=0, lost_sales=0, invalid_reservations=0, 20 accepted/5 sold-out per tick, p95=100ms. Complete diagnosis/updates yield 100. Negative vectors: idempotency-only still fails the bypass-queue race test; reconciliation while actively overselling is rejected; keeping sales suspended cannot satisfy throughput; repairing concurrency alone leaves the ten initial invalid reservations.
+
+19.4 analytics_v1 — The misleading conversion drop
+
+Brief: “Daily paid conversion appears to fall from 60% to 40%. Determine whether behavior changed, repair the report, and publish a verified explanation.” Fixed store zone: America/Los_Angeles. Every order is $100. Sessions already use local business dates. Payments mistakenly use UTC calendar dates. Dataset and business clock are frozen; elapsed mission ticks do not generate new transactions.
+
+Authored affected dates: July 15, 2025 has 100 sessions and 60 actual paid orders: 40 paid at July 15 17:00Z, 20 at July 16 02:00Z. July 16 has 50 sessions and 30 orders paid at July 16 17:00Z. All stated sessions belong to their corresponding local business dates. Baseline July 14 conversion is 60%, supplied only as context.
+
+Initial report: July 15, 40/100=40%, $4,000; July 16, 50/50=100%, $5,000. Correct report: July 15, 60/100=60%, $6,000; July 16, 30/50=60%, $3,000. Both aggregate to 90 paid orders and $9,000 across the affected dates.
+
+Evidence:
+• analytics.sources: initially available through Maya; exact timestamp groups above and successful ingestion run, with no missing or duplicated payments. Maya initially knows ingestion status only.
+• analytics.transforms: initially available through Leo; sessions use the store zone, payments extract date in UTC. Leo initially knows the business-date requirement only.
+• analytics.boundary_spec: unlocks after transforms; includes summer crossing July 16 02:00Z→July 15 local and winter January 16, 2025 07:30Z→January 15 local. The winter case is a separate test fixture and never contributes to revenue totals.
+
+Commands:
+• analytics.set_normalization(mode:utc|fixed_minus_7|named_zone), 1: requires transforms read; changes payment grouping but leaves the materialized report unchanged. named_zone means convert to America/Los_Angeles before extracting date. fixed_minus_7 fixes the summer report but fails winter.
+• analytics.rebuild, 3: recomputes both dates using current normalization, records source/transform fingerprints, and replaces the materialized report.
+• analytics.restart_ingestion, 1: changes no data or grouping; the misleading report remains.
+• analytics.test_totals, 1: requires sources read; passes only for a report current with its transform, exactly 90 orders/$9,000, and no duplicate source IDs. UTC may pass: totals alone cannot establish correct daily attribution.
+• analytics.test_boundaries, 1: requires boundary_spec read; tests both authored boundary fixtures and both daily report rows. UTC fails summer; fixed_minus_7 fails winter; named_zone with a current rebuild passes all.
+• analytics.publish, 1: stores an immutable simulated stakeholder-report snapshot. An incorrect, stale, or unverified publication increments incorrect_publications. A later correction may be published; only a current verified correct publication satisfies the outcome.
+
+Diagnosis ID: date_bucket_timezone_mismatch. Diagnosis evidence: sources and transforms. Outcome checks: normalization=named_zone; both daily rows exactly correct; affected-date totals exactly 90/$9,000; latest publication is current, correct, and verified. Verification: current passing totals and boundary tests. Judgment harm threshold: incorrect_publications=0.
+
+Reference vector: open sources; open transforms; open boundary_spec; set normalization named_zone; rebuild; test totals; test boundaries; publish; finish. Expected t=10, both corrected rows above, incorrect_publications=0, all tests current. Complete diagnosis/updates yield 100. Negative vectors: configuration change without rebuilding leaves the old report; fixed_minus_7 yields correct July numbers but fails winter; restarting ingestion cannot fix date attribution; an initial UTC totals pass cannot authorize a successful final assessment.
+
+
+19.5 Additional authoring requirements
+
+Give each mission at least three plausible diagnosis choices, with exactly the correct cause ID identified in its private rubric. Wrong choices must describe distinct plausible causes, not joke answers. Do not expose the correct choice through public field names or explanatory metadata.
+
+Write complete, readable evidence bodies and teammate fallback messages consistent with section 19's exact data. Provide at least two progressive authored hints per mission. The first directs attention to an available artifact; the second identifies a useful comparison without performing the repair. A zero-cost mission.hint command reveals and records the next eligible hint by ID. Repeating a revealed hint does not duplicate usage.
+
+Each numerical metric must be labeled: simulation state, historical incident evidence, or isolated test-fixture output. Do not mix a test fixture's transactions with incident workload totals. Scenario times and harm counters are deterministic training mechanics, not predictions about a real business.
+
+Resolve the appendix's checkpoint.restore label through the checkpoint fork endpoint. It always creates a new branch; it never resets an existing branch. Opening an artifact whose cost would reach the logical cap requires a confirmation explaining that the attempt will end after the action.
+
+20. IMPLEMENTATION MILESTONES AND HANDOFF INTERFACES
+
+Read the entire specification, then create a concise implementation plan and execute it in this order. Every milestone ends with a working, independently verifiable result and updated BUILD_STATUS.md. Do not stop after scaffolding or a landing page.
+
+Milestone 1 — Foundation, contracts, and secure accounts
+Files: root configuration, apps/web/src/app, apps/api/app/core, db, modules/auth,
+modules/users, migrations, infra, CI, environment examples, and bootstrap scripts.
+Deliver: reproducible startup, real PostgreSQL persistence, account/session/CSRF
+flows, Mailpit verification/reset, route protection, and a functional shell.
+Verify: registration/verification/login/logout, reset invalidation, unauthorized
+access, CSRF rejection, production configuration checks, and clean migration.
+
+Milestone 2 — First deterministic mission
+Files: engine/types.py, commands.py, transitions.py, visibility.py, scoring.py,
+registry.py, mechanics/checkout_v1.py, scenario schemas, seed CLI, golden fixtures.
+Deliver: complete checkout definition, private/public projections, command validation,
+logical ticks, outcome rules, criterion scoring, and golden replay.
+Verify the reference and negative paths before connecting AI. The engine tests must
+run without a provider, Redis, or browser.
+
+Milestone 3 — Persisted playable workspace
+Files: modules/scenarios, modules/runs, frontend missions/workspace/evidence/actions/
+timeline features, command transaction services, idempotency and events.
+Deliver: start, inspect, act, update, finalize, reload, and resume the checkout case.
+Verify real PostgreSQL transactions, duplicate requests, conflicting revisions,
+cross-user authorization, hidden evidence, and end-to-end mission completion.
+
+Milestone 4 — Teammates, workers, and durable events
+Files: ai contracts/context/providers/validation, jobs modules, conversations,
+SSE transport, frontend chat and connection states.
+Deliver: mock and real-provider adapters, eligible-context filtering, outbox,
+leases/fencing, quotas, bounded retries, and resilient event delivery.
+Verify stale dialogue, cancelled work, worker/broker loss, schema failures,
+provider failure, and the absence of hidden facts in prompts and public payloads.
+
+Milestone 5 — Checkpoints, debrief, and progress
+Files: modules/checkpoints, scoring, reports, frontend branches/debrief/progress/
+reports, replay logic, share management, print styling.
+Deliver: start checkpoint, independent branches, replay, comparisons, deterministic
+debrief, optional coaching, first-attempt/repeat labels, exports, and safe sharing.
+Verify no future context leaks, no double scoring, parent immutability, no external
+calls during replay, and immediate share revocation.
+
+Milestone 6 — Remaining scenarios and administration
+Files: inventory_v1.py, analytics_v1.py, authored scenario directories,
+modules/admin, schema-backed editor and preview routes.
+Deliver: all three complete missions, immutable preview snapshots, versioned editing,
+validation tied to content hashes, publication, and archival.
+Verify every reference/negative path, edited-draft preview isolation, and continued
+access to runs pinned to older published versions.
+
+Milestone 7 — Product quality and operational hardening
+Deliver: responsive layouts, accessibility fixes, all error/loading states,
+account cleanup, secure headers, usage observability, production images,
+backup/restore scripts, deployment docs, and bounded load verification.
+Inspect actual rendered screens at desktop and mobile sizes; fix broken interactions,
+overflow, unreadable charts, keyboard traps, and misleading status copy.
+
+Milestone 8 — Release candidate
+Run the complete verification command on a clean checkout/test database. Complete
+REQUIREMENTS_MATRIX.md and RELEASE_CHECKLIST.md. Run bounded live integrations only
+when configured and authorized. Deliver an honest final report of what passed,
+what failed, and what remains externally unverified.
+
+Interfaces to establish before parallel implementation:
+- execute_world_command(owner_id, branch_id, idempotency_key, request)
+  returns CommandResponse and owns the database transaction.
+- create_checkpoint(owner_id, branch_id, expected_state_revision, label, key)
+  returns CheckpointSummary from a settled atomic snapshot.
+- fork_checkpoint(owner_id, checkpoint_id, label, key) returns BranchSummary.
+- build_character_context(branch_id, teammate_id, message_event_id)
+  returns an immutable authorized context and its captured revision/cursor.
+- claim_ai_job(job_id) returns a fenced lease or a no-op if not claimable.
+- publish_ai_result(job_id, lease_token, validated_result)
+  conditionally commits one authoritative result event.
+- calculate_scorecard(final_state, inherited_ledger, new_events, scenario)
+  returns deterministic results and their canonical hash.
+- build_public_report_snapshot(scorecard, share_options)
+  returns only the explicit public-field allowlist.
+
+Define concrete types for these interfaces and reference them in each milestone.
+Parallel work must use agreed contracts and avoid overlapping file ownership.
+Review integrated behavior, not merely each isolated module.
+
+21. TESTING AND RELEASE ACCEPTANCE
+
+Use real PostgreSQL for migrations, transaction, concurrency, and JSONB integration
+tests. SQLite is not an acceptable substitute for these gates. Isolate test databases
+and Redis namespaces. Mock external providers and SMTP at explicit boundaries.
+
+Mandatory tests:
+T01. Fresh migration, upgrade from a previous migration fixture, and idempotent seed.
+T02. Account verification, login, logout, password reset, revoked/expired sessions.
+T03. CSRF/origin rejection and every resource's cross-user authorization.
+T04. Published/nonarchived mission-start rules and draft-ID guessing.
+T05. All three exact successful scenario vectors and their stated negative vectors.
+T06. Logical clock costs, cap boundaries, rejected commands, and zero-cost reads.
+T07. Deterministic scoring and verification-fingerprint invalidation.
+T08. Same idempotency key in parallel: one effect and the same committed response.
+T09. Different commands at the same revision: one success and one explicit conflict.
+T10. Transaction rollback leaves no partial state, event, quota, or outbox item.
+T11. Duplicate delivery, expired lease, late worker, cancellation, and stale context.
+T12. Broker loss after acknowledgement: queued PostgreSQL work is redispatched.
+T13. Fork baseline, saved notes, permitted transcript, inherited ledger counted once.
+T14. Replay reaches the same hash without model, email, or action dispatch.
+T15. SSE reconnect, filtered private events, cursor advancement, session revocation.
+T16. Prompt injection, unrevealed facts, malformed JSON, unsafe markup, invalid IDs.
+T17. Quotas count every provider attempt including repairs, retries, and coaching.
+T18. Debrief identity/hash checks remain valid when coaching status changes.
+T19. Preview definition stays unchanged after its source draft is edited.
+T20. Shared snapshot excludes private content; tokens expire and revoke immediately.
+T21. Sensitive token payloads are encrypted; logs/broker contain no plaintext secrets.
+T22. First-attempt designation survives simultaneous run creation and retries.
+T23. Account deletion cancels publication and revokes sessions/shares.
+T24. Keyboard and mobile completion of a mission, including dialogs and evidence.
+T25. AI outage leaves the deterministic mission and results usable.
+
+Add property-based/invariant tests where they expose real risk: scores remain within
+0–100; logical time is nonnegative and bounded; invalid commands do not mutate state;
+inventory invariants match the authored case; public projections never include
+private fields; branch-local event sequences remain ordered.
+
+End-to-end walkthrough:
+Create a user through the actual UI, verify locally, start checkout, inspect evidence,
+chat with a mock teammate, perform mitigation and repair, verify, finalize, read
+the report, fork a checkpoint, choose an alternative, compare, create a sanitized
+share, revoke it, and confirm the old URL no longer works. Repeat mission completion
+for inventory and analytics.
+
+Contract tests:
+Export OpenAPI, generate frontend types, validate scenario JSON, and fail on drift.
+Test every enum/error state used by the frontend. Do not alter fixtures or assertions
+merely to make a broken implementation appear to pass.
+
+Quality gates:
+- Frontend and backend lint/type checks pass.
+- Meaningful unit/integration/contract/end-to-end tests pass.
+- Production frontend and container builds succeed.
+- Scenario validators and golden replay checks pass.
+- Core flows pass keyboard and representative mobile checks.
+- Dependency/secret scans are reviewed and unresolved material findings documented.
+- No broken visible controls, dummy API responses, placeholder mission content,
+  fabricated telemetry, or TODOs in required flows.
+- Live provider, email, TLS, backup, and performance gates are explicitly marked
+  NOT VERIFIED when the environment cannot test them.
+
+Performance:
+Provide a reproducible modest load script using mock AI and separate test users.
+Target twenty concurrent active learners for five minutes on a recorded test host.
+Aim for p95 below 500 ms for ordinary state reads/commands and below 1% unexpected
+errors. Report hardware, dataset, configured limits, observed results, and exclusions.
+Measure model latency separately. A target is not an achieved benchmark.
+
+22. DEPLOYMENT, OPERATIONS, AND DATA HANDLING
+
+Deliver a vendor-neutral production Compose reference and document a single-host
+deployment plus managed PostgreSQL/Redis alternatives. Do not claim high availability
+for a single host. Public deployment is a separately authorized action.
+
+Deployment sequence:
+1. Provision a private database/Redis, secrets, backup target, and application domain.
+2. Build immutable images and scan them.
+3. Restore a backup into a disposable verification database and check it.
+4. Take a pre-migration backup and run one migration job.
+5. Start API, worker, dispatcher, and reverse proxy.
+6. Configure TLS and exact trusted hosts/proxies; validate secure cookies/headers.
+7. Run internal health checks and a bounded end-to-end smoke test.
+8. Enable public traffic only when the release checklist and authorization permit it.
+
+Document rollback for application images and database compatibility. Prefer
+backward-compatible expand/contract migrations. A database downgrade is not an
+automatic safe rollback; never run a destructive restore against an unspecified target.
+
+Observability:
+- Structured logs with request, run, branch, job, and event identifiers.
+- Redact tokens, passwords, provider keys, full prompts, raw model output, private
+  evidence, email links, and public-share token paths.
+- Metrics for API latency/errors, database pool saturation, active streams, queued
+  job age, lease recovery, provider outcomes/tokens, quota rejection, and failed emails.
+- Keep high-cardinality user IDs out of metric labels.
+- Alert on stuck queues, repeated worker failures, database/Redis loss, and abnormal
+  provider usage. Supply concrete operator runbook steps.
+- Restrict /metrics and admin operations; expose only aggregate operational detail.
+
+Backups:
+Document encrypted storage, access restrictions, daily backups, retention, and the
+chosen RPO/RTO targets. Default operating targets may be RPO 24 hours and RTO four
+hours for the small single-host release, but mark them unverified until a restore
+exercise measures them. Managed point-in-time recovery is an optional improvement.
+Perform a local restore rehearsal into a disposable database, then verify schema,
+row counts, pinned scenarios, a checkpoint, and a replay hash.
+
+Retention:
+- Demo data: expire after the configured two-hour lifetime and clean up regularly.
+- Completed delivery/replay secret payloads: purge promptly after their documented
+  delivery/retry window and always before their maximum expiry.
+- Raw AI job context: retain only as long as required for bounded execution/debugging;
+  default purge seven days after terminal state, with sanitized metadata retained.
+- Application logs and operational job metadata: configurable, default 30 and 90 days.
+- Learner activity/notes: retained while the account exists unless a documented
+  user-visible policy says otherwise; account deletion revokes access immediately.
+- Backups: default 30-day retention with deletion implications documented.
+Do not describe this policy as legal certification or automatic regulatory compliance.
+
+23. DEFINITION OF DONE AND FINAL CODEX RESPONSE
+
+The application is ready for release review when all required functionalities F01–F16
+are implemented, all three scenarios are playable, and each gate has evidence.
+
+The repository must include:
+- Working React frontend and FastAPI backend.
+- PostgreSQL models and migrations.
+- All authored mission content and deterministic engine mechanics.
+- Mock and real AI adapters with safe context and usage controls.
+- Durable jobs, resumable events, checkpoints, forks, replay, and results.
+- Secure accounts, admin publication, report sharing, and data cleanup.
+- Reproducible local setup, production images, CI, tests, and operational docs.
+- A requirements matrix, limitations, and accurately completed release checklist.
+
+Your final response as Codex must state:
+1. What is implemented and the exact repository location.
+2. The shortest tested local setup command and URLs.
+3. How to create the admin and configure the live provider without exposing secrets.
+4. Which verification commands actually ran and their actual outcomes.
+5. Which live/production checks remain unverified and exactly what is missing.
+6. Material limitations or known defects.
+7. The next release/deployment action, if authorization or external setup is required.
+
+Do not claim "production ready" solely because the UI looks complete or tests pass
+with mocks. Describe a verified release candidate and its remaining deployment gates.
+If the session ends before completion, persist exact progress and the next task in
+BUILD_STATUS.md; never mark unfinished milestones complete.
+
+Begin now by inspecting the repository, establishing contracts and the milestone plan,
+and implementing the first verified vertical slice. Continue through the required
+milestones while preserving the product and security boundaries above.
+
+24. PRIMARY TECHNICAL REFERENCES
+
+These references support the implementation choices. The application requirements,
+scenario rules, UI direction, and thresholds in this document are proposed design
+decisions, not claims copied from these sources. Check current stable documentation
+when resolving dependency or provider details.
+
+React application setup:
+https://react.dev/learn/build-a-react-app-from-scratch
+
+Vite:
+https://vite.dev/guide/
+
+FastAPI:
+https://fastapi.tiangolo.com/
+
+SQLAlchemy asynchronous sessions:
+https://docs.sqlalchemy.org/en/21/orm/extensions/asyncio.html
+
+PostgreSQL supported versions:
+https://www.postgresql.org/support/versioning/
+
+Celery task delivery, acknowledgements, and retries:
+https://docs.celeryq.dev/en/stable/userguide/tasks.html
+
+OWASP session management:
+https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html
+
+OWASP CSRF prevention:
+https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html
+
+Gemini current models and capabilities:
+https://aistudio.google.com/docs/models
+https://aistudio.google.com/docs/models/gemini-3.8-flash
+
+Node.js release support:
+https://nodejs.org/en/about/previous-releases
+
+Python supported versions:
+https://devguide.python.org/versions/
+
+END OF MASTER BUILD PROMPT
+
