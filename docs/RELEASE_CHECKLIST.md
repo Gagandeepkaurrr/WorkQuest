@@ -1,6 +1,6 @@
 # Release checklist
 
-Updated 2026-11-12. **No-charge follow-up:** runtime is now local-only and the paid Render stack is disabled. Fresh checks are distinguished from earlier evidence below; see BUILD_STATUS.md for details. PASS means an executed local check; NOT VERIFIED is an explicit release gate. This is a locally verified candidate, not a production-readiness certification.
+Updated 2026-11-24. **No-charge follow-up:** runtime is now local-only and the paid Render stack is disabled. Fresh checks are distinguished from earlier evidence below; see BUILD_STATUS.md for details. PASS means an executed local check; NOT VERIFIED is an explicit release gate. This is a locally verified candidate, not a production-readiness certification.
 
 | Gate | Status | Evidence |
 |---|---|---|
@@ -12,16 +12,16 @@ Updated 2026-11-12. **No-charge follow-up:** runtime is now local-only and the p
 | Admin immutability/publication | PASS | Hash-bound validation, copied preview, published-edit DB triggers, reseed preserves active v2 |
 | Frontend/backend lint/types/tests | PASS | `make verify`: Ruff, mypy84 files, pytest50, ESLint, Vitest9, build, generated contract drift |
 | Desktop/mobile/keyboard | PASS representative coverage | `make e2e`: 8/8, 45.6s, three missions, notes/chat/replay/fork/compare/sharing, preferences/archive/delete; axe zero in tested debrief views |
-| Local setup | PASS earlier release; current dev verified | `make setup` and `make dev`; PostgreSQL18.6, Redis8.4, Mailpit1.27.10; pinned installs/migrations/seed/Chromium |
+| Local setup | PASS locally and current CI | `make setup` and `make dev`; PostgreSQL18.6, Redis8.4, Mailpit1.27.10; pinned installs/migrations/seed/Chromium |
 | Production frontend/contracts | PASS | Vite/TypeScript build; OpenAPI/scenario JSON schema and generated types drift check |
 | Container build and smoke | Current build PASS; smoke historical | Non-root/read-only Compose, readiness, inherited CSP/no-store/noindex, SPA route, cookie/CSRF/run/state, restricted metrics; container-smoke.json |
 | Dependency/credential scans | PASS within scope | pnpm production audit + pip-audit zero findings; known token/key patterns zero; not exhaustive |
 | Runtime image scan | Historical PASS within scope | Docker Scout1.27.0, local arm64 API/web, zero high/critical after OS updates and Debian frontend switch; re-scan hosted amd64 builds |
-| Local backup/restore | Historical PASS; rerun in CI | Disposable restore/previous fixture upgrade/hash/replay verification; summary JSON in docs/verification |
+| Local backup/restore | PASS locally and current CI | Disposable restore/previous fixture upgrade/hash/replay verification; summary JSON in docs/verification |
 | 20 learners / five minutes | Historical PASS locally | 6,045 requests, 0 errors, p95 read28.34ms/command91.14ms; mock AI; Apple M5/16GB |
 | Independent final code review | PASS; no-charge review found no issues | Auth serialization, retry keys, archive control, checkpoint notice fixed; hosted proxy trust remains explicit gate |
 | Render/Vercel configuration schema | PASS locally | Render declares zero resources; Vercel frontend-only instance validated against published schema; account-level validation not run |
-| GitHub Actions | PENDING current push | Previous release ea2c74c passed; current no-charge diff needs clean-runner verification |
+| GitHub Actions | PASS | No-charge commit `7ed9652`: clean Ubuntu setup, verify, browser journeys, restore, audit and amd64 builds; [workflow run](https://github.com/Gagandeepkaurrr/WorkQuest/actions/runs/43089299763), confirmed 2026-11-24 |
 | No model charges | PASS | Socket-blocked dialogue/coaching and worker tests; reject paid provider settings; zero tokens; offline provider CLI |
 | Live model integration | REMOVED | User requires no AI/API charges; no adapter, SDK, key or billable probe remains |
 | External SMTP | NOT VERIFIED | Need real sender credentials/DNS/TLS/delivery; only Mailpit verified |

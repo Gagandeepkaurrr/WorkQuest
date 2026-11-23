@@ -1,8 +1,8 @@
 # WorkQuest build status
 
-Updated: 2026-11-12, Asia/Kolkata. Repository: `/Users/gaggu/WorkQuest`. Authorized GitHub destination: **Gagandeepkaurrr/WorkQuest only**.
+Updated: 2026-11-24, Asia/Kolkata. Repository: `/Users/gaggu/WorkQuest`. Authorized GitHub destination: **Gagandeepkaurrr/WorkQuest only**.
 
-**No-charge release verified locally; push and clean-runner CI pending. Complete supported operation is local.** The complete 1,617-line supplied specification is preserved in PROJECT_SPECIFICATION.txt. The repository was initially empty; no applicable AGENTS.md existed. User styling instructions supersede the dark-default specification.
+**No-charge release pushed to WorkQuest main; local checks and clean-runner GitHub Actions passed. Complete supported operation is local.** The complete 1,617-line supplied specification is preserved in PROJECT_SPECIFICATION.txt. The repository was initially empty; no applicable AGENTS.md existed. User styling instructions supersede the dark-default specification.
 
 ## No-charge change — 2026-11-12
 
@@ -19,7 +19,7 @@ The user explicitly requires no AI/API credits **and no hosting charges**. This 
 | 5. Branches, debrief, progress | Implemented | Immutable checkpoints, independent forks/notes/transcripts, deterministic debrief, replay/comparison, first/latest/best progress, sanitized expiring/revocable shares |
 | 6. Remaining missions and admin | Implemented | Inventory t=11/zero new oversells/100; analytics t=10/90 orders/$9,000/100; draft import/edit/hash validation/copied preview/publish/archive/audit; DB immutability triggers |
 | 7. Product and operations | Implemented locally | White/glass/pegboard responsive UI; keyboard/mobile checks; metrics, cleanup, non-root images, CI, production Compose, disabled Render Blueprint, frontend-only Vercel configuration, local restore and load exercise |
-| 8. Release review | Local checks complete | Current no-charge checks and independent review complete. Earlier image scans/container smoke retained as historical evidence. Push and new clean-runner CI pending. |
+| 8. Release review | Local checks complete | Current no-charge checks and independent review complete. Earlier image scans/container smoke retained as historical evidence. Pushed commit `7ed9652`; clean-runner CI passed. |
 
 ## Current no-charge verification
 
@@ -30,11 +30,11 @@ The user explicitly requires no AI/API credits **and no hosting charges**. This 
 - Production API/web images rebuilt successfully locally from the current locked dependencies. Live development API/frontend/worker/dispatcher and updated landing screenshot verified.
 - Disabled Render file passes the official published JSON schema and declares zero resources. Retained Vercel configuration passes an instance check against its published schema. Account-level Blueprint validation, Vercel deployment and public application smoke tests were not performed.
 - Independent source review of the no-charge update: no actionable findings.
-- GitHub Actions for this update: pending push. The previous successful run below does not verify the current diff.
+- GitHub Actions: PASS on `7ed9652` — clean Ubuntu setup, verification, browser journeys, backup/restore, package audits and amd64 container builds. [Workflow run](https://github.com/Gagandeepkaurrr/WorkQuest/actions/runs/43089299763). Result confirmed 2026-11-24; this is CI, not a public deployment.
 
 ## Earlier release evidence (historical)
 
-- `make setup`: PASS with existing `.env` preserved; locked install, PostgreSQL/Redis/Mailpit readiness, migrations/seed, disposable test database and Chromium. Setup will also run on the new CI commit.
+- `make setup`: PASS with existing `.env` preserved; locked install, PostgreSQL/Redis/Mailpit readiness, migrations/seed, disposable test database and Chromium. Setup also passed on the new CI commit.
 - `make load`: PASS — **20 learners, 301.41 seconds, 6,045 requests, zero unexpected errors**. Read p95 **28.34ms**, command p95 **91.14ms**. Apple M5/16GB/macOS26.6, local PostgreSQL18.6/Redis8.4 and authored mock provider. Dataset 160 runs/branches, 3,582 events, 140 scorecards, 20 jobs. Hosted capacity excluded. [Measured report](verification/load-report.json).
 - `make backup-restore`: PASS — disposable restore, prior seeded migration upgrade, pinned scenario/checkpoint/replay hash verification. [Report](verification/restore-report.json). Production remote backup/RPO/RTO unverified.
 - Local arm64 API/frontend Docker Scout high/critical scans had zero findings. Non-root/read-only container smoke passed readiness, SPA/API/auth/run, inherited CSP, no-store, report noindex and restricted metrics. Those image scans and container smoke precede the no-charge update; current images have been rebuilt but not re-scanned. Scans are time-, architecture- and severity-specific.
@@ -52,4 +52,4 @@ A fresh-context reviewer inspected the complete working tree. Corrected: reset/l
 - Trusted proxy identity: Render/Vercel forwarded client-IP chain must be verified/configured before multi-user signup. Default conservative trust can group clients under ingress authentication limits. Single-origin Compose has an exact configured trust chain; its public deployment is also unverified.
 - Offsite encrypted backups, alert delivery, measured production RPO24h/RTO4h: not configured or rehearsed.
 
-Next action: push the no-charge update to WorkQuest `main` and verify clean-runner CI. The supported complete app runs locally; do not provision the old paid Render stack. See [deployment commands](DEPLOY_RENDER_VERCEL.md), [operations](OPERATIONS.md), [limitations](KNOWN_LIMITATIONS.md), and [acceptance mapping](REQUIREMENTS_MATRIX.md).
+Handoff complete: the no-charge implementation is pushed to WorkQuest `main`, and its clean-runner CI passed. The supported complete app runs locally; do not provision the old paid Render stack. See [deployment commands](DEPLOY_RENDER_VERCEL.md), [operations](OPERATIONS.md), [limitations](KNOWN_LIMITATIONS.md), and [acceptance mapping](REQUIREMENTS_MATRIX.md).
