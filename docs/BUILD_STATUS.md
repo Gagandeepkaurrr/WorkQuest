@@ -53,3 +53,13 @@ A fresh-context reviewer inspected the complete working tree. Corrected: reset/l
 - Offsite encrypted backups, alert delivery, measured production RPO24h/RTO4h: not configured or rehearsed.
 
 Handoff complete: the no-charge implementation is pushed to WorkQuest `main`, and its clean-runner CI passed. The supported complete app runs locally; do not provision the old paid Render stack. See [deployment commands](DEPLOY_RENDER_VERCEL.md), [operations](OPERATIONS.md), [limitations](KNOWN_LIMITATIONS.md), and [acceptance mapping](REQUIREMENTS_MATRIX.md).
+
+## Repository cleanup — 2026-11-24
+
+Removed three unused/redundant tracked files:
+
+- `apps/api/app/modules/scoring/__init__.py`: empty unused package; active scoring remains in `app/engine/scoring.py`.
+- `scripts/author-scenarios.py`: one-off content generation script; committed scenario JSON is authoritative, loaded directly and validated by the maintained scenario CLI.
+- `docs/verification/github-ci.json`: old CI snapshot duplicated by the linked historical/current workflow evidence above.
+
+Application code, tests, migrations, lockfiles, setup scripts, deployment configuration and referenced verification reports are retained. Cleanup validation: scenario vectors, Python type checks and generated contract drift check.
