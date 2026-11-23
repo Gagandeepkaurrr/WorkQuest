@@ -44,7 +44,7 @@ The complete supported setup runs on your existing computer with **no AI API cre
 Teammates use authored scenario facts and rule-based replies, not a general-purpose language model. Coaching also runs locally. Check it without any billable request:
 
 ```sh
-cd apps/api
+cd backend
 uv run python -m app.cli.validate_provider
 ```
 
@@ -52,11 +52,11 @@ The previous paid Render deployment is disabled: `render.yaml` provisions no res
 
 ## Where things live
 
-- `apps/web/src`: routes, accessible dialogs, evidence/actions/workspace, branch comparisons, debrief, admin and settings.
-- `apps/api/app/engine`: pure mechanics, visibility, scoring and replay.
-- `apps/api/content/scenarios`: backend-only authored definitions, golden and negative vectors.
-- `apps/api/app/modules`: accounts, persistent runs, checkpoints, conversations, reports and administration.
-- `apps/api/app/jobs`: PostgreSQL-backed durable work, quota reservations, fenced leases and recovery.
+- `frontend/src`: routes, accessible dialogs, evidence/actions/workspace, branch comparisons, debrief, admin and settings.
+- `backend/app/engine`: pure mechanics, visibility, scoring and replay.
+- `backend/content/scenarios`: backend-only authored definitions, golden and negative vectors.
+- `backend/app/modules`: accounts, persistent runs, checkpoints, conversations, reports and administration.
+- `backend/app/jobs`: PostgreSQL-backed durable work, quota reservations, fenced leases and recovery.
 - `packages/contracts`: exported OpenAPI and scenario schema. `make contracts` regenerates frontend types.
 - `infra`: non-root production images/proxy and vendor-neutral Compose reference.
 

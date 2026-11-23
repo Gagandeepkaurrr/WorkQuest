@@ -17,7 +17,7 @@ test("checkout UI, persisted notes, mock chat, replay and branch", async ({
     page.getByRole("heading", { name: "Your next good decision." }),
   ).toBeVisible();
   await page.screenshot({
-    path: `../../artifacts/library-${testInfo.project.name}.png`,
+    path: `../artifacts/library-${testInfo.project.name}.png`,
     fullPage: true,
   });
   await activate(
@@ -89,7 +89,7 @@ test("checkout UI, persisted notes, mock chat, replay and branch", async ({
     page.getByRole("status").filter({ hasText: "Replay matches" }),
   ).toBeVisible();
   await page.screenshot({
-    path: `../../artifacts/debrief-${testInfo.project.name}.png`,
+    path: `../artifacts/debrief-${testInfo.project.name}.png`,
     fullPage: true,
   });
   const results = await new AxeBuilder({ page })

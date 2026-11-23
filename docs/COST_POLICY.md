@@ -20,7 +20,7 @@ PostgreSQL, Redis and Mailpit run locally in Docker. React, FastAPI, the worker 
 - Provider results require zero model tokens. New completed reply attempts record known zero API cost. Request/retry limits remain to protect local resources, not as paid credits.
 - No analytics, model API or remote font service is required by the application. Package installation and container pulls use the network during setup; the application stack and teammate engine run locally afterward.
 
-Verify the cost boundary with `uv run --project apps/api pytest apps/api/tests/unit/test_free_runtime.py apps/api/tests/unit/test_config.py`. The tests block sockets during dialogue/coaching and the worker path, reject paid provider settings, and prove zero token usage. `cd apps/api && uv run python -m app.cli.validate_provider` is an offline check, with no `--live` mode.
+Verify the cost boundary with `uv run --project backend pytest backend/tests/unit/test_free_runtime.py backend/tests/unit/test_config.py`. The tests block sockets during dialogue/coaching and the worker path, reject paid provider settings, and prove zero token usage. `cd backend && uv run python -m app.cli.validate_provider` is an offline check, with no `--live` mode.
 
 ## Hosting boundary
 

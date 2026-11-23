@@ -1,6 +1,6 @@
 # Dependency decisions
 
-Checked 2026-11-11. Exact resolved JavaScript packages are in pnpm-lock.yaml and apps/web/package.json. Exact Python resolution is in apps/api/uv.lock (Python 3.14.10). Container digests are recorded in Compose/build definitions.
+Checked 2026-11-11. Exact resolved JavaScript packages are in pnpm-lock.yaml and frontend/package.json. Exact Python resolution is in backend/uv.lock (Python 3.14.10). Container digests are recorded in Compose/build definitions.
 
 - Python 3.14.10 installs the required stack on Apple Silicon without a fallback.
 - SQLAlchemy 2.0.57, psycopg 3.3.8, FastAPI 0.162.4, Celery 5.7.0, Google GenAI 3.1.0 resolved successfully.

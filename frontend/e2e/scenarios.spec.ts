@@ -84,7 +84,7 @@ for (const slug of ["inventory-race", "analytics-timezone"]) {
       ).violations,
     ).toEqual([]);
     await page.screenshot({
-      path: `../../artifacts/${slug}-${testInfo.project.name}.png`,
+      path: `../artifacts/${slug}-${testInfo.project.name}.png`,
       fullPage: true,
     });
   });

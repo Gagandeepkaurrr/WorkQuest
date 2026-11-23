@@ -55,5 +55,5 @@ jobs:
           path: |
             artifacts/*report.json
             artifacts/audit-*.json
-            apps/web/playwright-report
+            frontend/playwright-report
           retention-days: 7

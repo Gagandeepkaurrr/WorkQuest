@@ -58,8 +58,14 @@ Handoff complete: the no-charge implementation is pushed to WorkQuest `main`, an
 
 Removed three unused/redundant tracked files:
 
-- `apps/api/app/modules/scoring/__init__.py`: empty unused package; active scoring remains in `app/engine/scoring.py`.
+- `backend/app/modules/scoring/__init__.py`: empty unused package; active scoring remains in `app/engine/scoring.py`.
 - `scripts/author-scenarios.py`: one-off content generation script; committed scenario JSON is authoritative, loaded directly and validated by the maintained scenario CLI.
 - `docs/verification/github-ci.json`: old CI snapshot duplicated by the linked historical/current workflow evidence above.
 
 Application code, tests, migrations, lockfiles, setup scripts, deployment configuration and referenced verification reports are retained. Cleanup validation: scenario vectors, Python type checks and generated contract drift check.
+
+## Repository layout — 2026-11-24
+
+Moved React to `frontend/` and FastAPI to `backend/`. Shared contracts remain in `packages/contracts/`, infrastructure in `infra/`, automation in `scripts/`, and documentation in `docs/`. Updated workspace/lockfile paths, Docker/Compose, Vercel, CI, scripts and repository-root discovery. Original supplied specification remains unchanged.
+
+Layout verification: `make verify` passed (50 backend tests, 9 frontend tests, Ruff, mypy83 files, scenario vectors, generated contracts, ESLint and production build). Docker/Compose and CI paths updated; container rebuild and browser journeys have not been rerun for this layout change.

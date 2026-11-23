@@ -3,7 +3,7 @@ from pathlib import Path
 
 from dotenv import dotenv_values
 
-root = Path(__file__).resolve().parents[3]
+root = Path(__file__).resolve().parents[2]
 local = dotenv_values(root / ".env")
 for k, v in local.items():
     if v is not None:

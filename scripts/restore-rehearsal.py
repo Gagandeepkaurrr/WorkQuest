@@ -14,10 +14,10 @@ try:
     with psycopg.connect(base+'/postgres',autocommit=True) as db:
         for target in [name,previous]:db.execute(psycopg.sql.SQL('CREATE DATABASE {}').format(psycopg.sql.Identifier(target)));created.append(target)
     env={**os.environ,**settings,'DATABASE_URL':settings['DATABASE_URL'].rsplit('/',1)[0]+'/'+previous,'APP_ENV':'local'}
-    subprocess.run([sys.executable,'-m','alembic','upgrade','38e51082aa0b'],cwd=root/'apps/api',env=env,check=True)
-    subprocess.run([sys.executable,'-m','app.cli.seed'],cwd=root/'apps/api',env=env,check=True)
-    subprocess.run([sys.executable,'-m','alembic','upgrade','head'],cwd=root/'apps/api',env=env,check=True)
-    subprocess.run([sys.executable,'-m','app.cli.seed'],cwd=root/'apps/api',env=env,check=True)
+    subprocess.run([sys.executable,'-m','alembic','upgrade','38e51082aa0b'],cwd=root/'backend',env=env,check=True)
+    subprocess.run([sys.executable,'-m','app.cli.seed'],cwd=root/'backend',env=env,check=True)
+    subprocess.run([sys.executable,'-m','alembic','upgrade','head'],cwd=root/'backend',env=env,check=True)
+    subprocess.run([sys.executable,'-m','app.cli.seed'],cwd=root/'backend',env=env,check=True)
     with psycopg.connect(base+'/'+previous) as db:assert db.execute('SELECT count(*) FROM scenario_versions').fetchone()[0]==3
     with tempfile.TemporaryFile() as backup:
         subprocess.run(['docker','compose','exec','-T','db','pg_dump','-U','workquest','-Fc','workquest'],cwd=root,stdout=backup,check=True)
@@ -28,7 +28,7 @@ try:
         tables=[row[0] for row in db.execute("SELECT tablename FROM pg_tables WHERE schemaname='public'")]
         counts={table:db.execute(psycopg.sql.SQL('SELECT count(*) FROM {}').format(psycopg.sql.Identifier(table))).fetchone()[0] for table in tables}
         assert counts['scenario_versions']>=3 and counts['checkpoints']>0 and counts['branches']>0
-        sys.path.insert(0,str(root/'apps/api'))
+        sys.path.insert(0,str(root/'backend'))
         from app.engine.replay import replay_branch
         from app.engine.types import Scenario,WorldState,canonical_hash
         for definition,content_hash in db.execute('SELECT definition_private_json,content_hash FROM scenario_versions'):

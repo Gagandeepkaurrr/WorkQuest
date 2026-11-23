@@ -5,7 +5,7 @@ from pathlib import Path
 from app.engine.types import Scenario
 from app.main import app
 
-root = Path(__file__).resolve().parents[4]
+root = Path(__file__).resolve().parents[3]
 folder = Path(os.environ.get("CONTRACT_OUTPUT", str(root / "packages/contracts")))
 folder.mkdir(parents=True, exist_ok=True)
 (folder / "openapi.json").write_text(json.dumps(app.openapi(), indent=2, sort_keys=True) + "\n")

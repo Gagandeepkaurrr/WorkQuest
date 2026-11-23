@@ -4,7 +4,7 @@ import json,re,subprocess,sys
 root=Path(__file__).resolve().parent.parent
 artifacts=root/'artifacts';artifacts.mkdir(exist_ok=True)
 results={}
-for label,command,cwd in [('frontend',['pnpm','audit','--prod','--json'],root),('python',['uv','run','pip-audit','--format','json'],root/'apps/api')]:
+for label,command,cwd in [('frontend',['pnpm','audit','--prod','--json'],root),('python',['uv','run','pip-audit','--format','json'],root/'backend')]:
     result=subprocess.run(command,cwd=cwd,capture_output=True,text=True)
     (artifacts/f'audit-{label}.json').write_text(result.stdout)
     (artifacts/f'audit-{label}-stderr.txt').write_text(result.stderr)

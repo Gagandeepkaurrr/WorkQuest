@@ -13,8 +13,8 @@ Prepare a root-readable private environment file outside Git with production val
 Build and push images to your chosen private/trusted registry, scan them, and set `API_IMAGE` and `WEB_IMAGE` to immutable `name@sha256:...` digests. Also set `APP_ENV_FILE` to the absolute private file path, `APP_DOMAIN`, and `POSTGRES_PASSWORD` in the operator's environment. The registry and domain are not provisioned by this repository.
 
 ```sh
-docker build -f apps/api/Dockerfile -t YOUR_REGISTRY/workquest-api:RELEASE .
-docker build -f apps/web/Dockerfile -t YOUR_REGISTRY/workquest-web:RELEASE .
+docker build -f backend/Dockerfile -t YOUR_REGISTRY/workquest-api:RELEASE .
+docker build -f frontend/Dockerfile -t YOUR_REGISTRY/workquest-web:RELEASE .
 docker scout cves --only-severity critical,high YOUR_REGISTRY/workquest-api:RELEASE
 docker scout cves --only-severity critical,high YOUR_REGISTRY/workquest-web:RELEASE
 # Push the two reviewed images, resolve their registry digests, and configure the variables above.

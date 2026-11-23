@@ -1,5 +1,5 @@
 x-app: &app
-  build: {context: ., dockerfile: apps/api/Dockerfile}
+  build: {context: ., dockerfile: backend/Dockerfile}
   image: workquest-api:local
   env_file: .env
   environment: &environment
@@ -31,7 +31,7 @@ services:
     <<: *app
     command: [python, -m, app.jobs.dispatcher]
   web:
-    build: {context: ., dockerfile: apps/web/Dockerfile}
+    build: {context: ., dockerfile: frontend/Dockerfile}
     image: workquest-web:local
     ports: ["127.0.0.1:8080:8080"]
     depends_on:

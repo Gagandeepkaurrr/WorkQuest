@@ -19,7 +19,7 @@ Source: PROJECT_SPECIFICATION.txt, with the user's white/glass/pegboard visual o
 
 ## Mandatory acceptance cases
 
-Paths are relative to `apps/api/tests` unless noted. Each named test was included in the passing local suite; these establish the described boundary, not every possible adversarial interleaving.
+Paths are relative to `backend/tests` unless noted. Each named test was included in the passing local suite; these establish the described boundary, not every possible adversarial interleaving.
 
 | ID | Named executable evidence |
 |---|---|
@@ -46,7 +46,7 @@ Paths are relative to `apps/api/tests` unless noted. Each named test was include
 | T21 Encrypted token/broker payload | auth/branch tests; ID-only broker assertion; structured logging source review and bounded credential scan (hosting-provider logs unverified) |
 | T22 Concurrent first root | `test_acceptance.py::test_first_attempt_simultaneous_roots_and_seed_idempotence` |
 | T23 Deletion/late publication | `test_release_boundaries.py::test_deletion_destroys_secrets_and_blocks_late_publication`; auth deletion test |
-| T24 Mobile/keyboard | `apps/web/e2e/checkout.spec.ts`, `scenarios.spec.ts` on desktop and mobile Chromium; dialogs, evidence and keyboard operations |
+| T24 Mobile/keyboard | `frontend/e2e/checkout.spec.ts`, `scenarios.spec.ts` on desktop and mobile Chromium; dialogs, evidence and keyboard operations |
 | T25 AI outage independent of engine | `test_jobs.py::test_quota_and_schema_failure_preserve_work`; failed-coaching test and deterministic replay/engine tests |
 
 Frontend recovery tests additionally cover exact request/key replay after a lost response, rejections before idempotency lookup, share preview consistency and safe plain-text alias rendering. Accessibility evidence is representative Chromium/axe coverage; no claim of exhaustive assistive-technology certification.

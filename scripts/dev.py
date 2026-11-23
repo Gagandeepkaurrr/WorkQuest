@@ -4,7 +4,7 @@ import subprocess
 import signal
 import time
 root=Path(__file__).resolve().parent.parent
-commands=[(['uv','run','uvicorn','app.main:app','--host','127.0.0.1','--port','8000','--no-access-log'],root/'apps/api'),(['pnpm','dev'],root),(['uv','run','celery','-A','app.jobs.celery_app:celery','worker','--pool=solo','--loglevel=WARNING','--without-gossip','--without-mingle'],root/'apps/api'),(['uv','run','python','-m','app.jobs.dispatcher'],root/'apps/api')]
+commands=[(['uv','run','uvicorn','app.main:app','--host','127.0.0.1','--port','8000','--no-access-log'],root/'backend'),(['pnpm','dev'],root),(['uv','run','celery','-A','app.jobs.celery_app:celery','worker','--pool=solo','--loglevel=WARNING','--without-gossip','--without-mingle'],root/'backend'),(['uv','run','python','-m','app.jobs.dispatcher'],root/'backend')]
 children=[]
 def stop(*_):raise KeyboardInterrupt
 signal.signal(signal.SIGTERM,stop)

@@ -13,10 +13,10 @@ base=env['DATABASE_URL'].rsplit('/',1)[0];name='workquest_load_'+secrets.token_h
 admin_url=(base+'/postgres').replace('postgresql+psycopg://','postgresql://')
 with psycopg.connect(admin_url,autocommit=True) as db:db.execute(psycopg.sql.SQL('CREATE DATABASE {}').format(psycopg.sql.Identifier(name)))
 env.update(DATABASE_URL=base+'/'+name,APP_ENV='local',APP_ORIGIN='http://localhost:8001',REDIS_NAMESPACE=name,AI_PROVIDER='local',DEMO_ENABLED='false')
-os.environ.update(env);sys.path.insert(0,str(root/'apps/api'))
+os.environ.update(env);sys.path.insert(0,str(root/'backend'))
 children=[];logs=[];measurements={'reads':[],'commands':[]};errors=[];calls=0
 try:
-    subprocess.run([sys.executable,'-m','alembic','upgrade','head'],cwd=root/'apps/api',env=env,check=True)
+    subprocess.run([sys.executable,'-m','alembic','upgrade','head'],cwd=root/'backend',env=env,check=True)
     from app.cli.seed import seed
     from app.db.sessions import SyncSession
     from app.modules.auth.models import User
@@ -27,7 +27,7 @@ try:
         for i in range(args.learners):db.add(User(normalized_email=f'load-{i}@example.com',display_name=f'Load {i}',password_hash=password_hasher.hash(password),email_verified_at=now()))
     for label,command in [('api',[sys.executable,'-m','uvicorn','app.main:app','--host','127.0.0.1','--port','8001','--no-access-log']),('worker',[sys.executable,'-m','celery','-A','app.jobs.celery_app:celery','worker','--pool=solo','--loglevel=ERROR','--without-gossip','--without-mingle']),('dispatcher',[sys.executable,'-m','app.jobs.dispatcher'])]:
         output=(root/'artifacts'/f'load-{label}.log').open('w');logs.append(output)
-        children.append(subprocess.Popen(command,cwd=root/'apps/api',env=env,stdout=output,stderr=subprocess.STDOUT))
+        children.append(subprocess.Popen(command,cwd=root/'backend',env=env,stdout=output,stderr=subprocess.STDOUT))
     for _ in range(50):
         try:
             if httpx.get('http://localhost:8001/health/ready',timeout=2).status_code==200:break
